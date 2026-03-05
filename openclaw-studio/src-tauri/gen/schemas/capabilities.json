@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Default capability for OpenClaw Studio","local":true,"windows":["main"],"permissions":["core:default","shell:allow-spawn","shell:allow-execute","shell:allow-open"]}}

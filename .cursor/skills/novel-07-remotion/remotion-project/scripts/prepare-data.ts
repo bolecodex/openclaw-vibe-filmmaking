@@ -20,14 +20,22 @@ interface RawLine {
 }
 
 interface RawShot {
-  id: string;
-  title: string;
-  shot_type?: string;
+  shot_id: string;
+  type?: string;
+  duration?: number;
+  content?: string;
   image_url?: string;
+  image_path?: string;
   image_status?: string;
+  audio_url?: string;
+  audio_status?: string;
   mood?: string;
   lighting?: string;
-  lines: RawLine[];
+  lines?: RawLine[];
+  // Legacy compat
+  id?: string;
+  title?: string;
+  shot_type?: string;
 }
 
 interface RawScene {
@@ -37,9 +45,16 @@ interface RawScene {
 }
 
 interface ManifestEntry {
-  file: string;
+  shot_file: string;
   scene_id: string;
   scene_name: string;
+  // Legacy compat
+  file?: string;
+}
+
+interface Manifest {
+  scenes?: ManifestEntry[];
+  files?: ManifestEntry[];
 }
 
 interface PrepareOptions {
@@ -58,6 +73,13 @@ interface PrepareOptions {
 function log(msg: string, level = "INFO") {
   const ts = new Date().toLocaleTimeString();
   console.log(`[${ts}] [${level}] ${msg}`);
+}
+
+function extractExt(url: string, fallback: string): string {
+  const pathname = url.split("?")[0];
+  const ext = pathname.split(".").pop();
+  if (ext && ext.length <= 5 && /^[a-z0-9]+$/i.test(ext)) return ext;
+  return fallback;
 }
 
 function downloadFile(url: string, dest: string): Promise<void> {
@@ -122,6 +144,37 @@ function getAudioDuration(filePath: string): number {
   }
 }
 
+function getShotId(shot: RawShot): string {
+  return shot.shot_id || shot.id || "unknown";
+}
+
+function parseShotContent(content: string): { speaker: string; text: string } {
+  const match = content.match(/^\*\*(.+?)(?:：|:)\*\*\s*([\s\S]*)$/m);
+  if (match) return { speaker: match[1].trim(), text: match[2].trim() };
+  return { speaker: "旁白", text: content.trim() };
+}
+
+function getShotLines(shot: RawShot): { speaker: string; text: string; audioUrl?: string; audioStatus?: string }[] {
+  if (shot.lines && shot.lines.length > 0) {
+    return shot.lines.map((l) => ({
+      speaker: l.speaker,
+      text: l.text,
+      audioUrl: l.audio_url,
+      audioStatus: l.audio_status,
+    }));
+  }
+  if (shot.content) {
+    const parsed = parseShotContent(shot.content);
+    return [{
+      speaker: parsed.speaker,
+      text: parsed.text,
+      audioUrl: shot.audio_url,
+      audioStatus: shot.audio_status,
+    }];
+  }
+  return [];
+}
+
 function checkSceneResources(scene: RawScene): {
   ready: boolean;
   imagesReady: number;
@@ -137,16 +190,17 @@ function checkSceneResources(scene: RawScene): {
     if (shot.image_url && shot.image_status === "completed") {
       imagesReady++;
     }
-    for (const line of shot.lines || []) {
+    const lines = getShotLines(shot);
+    for (const line of lines) {
       totalAudio++;
-      if (line.audio_url && line.audio_status === "completed") {
+      if (line.audioUrl && line.audioStatus === "completed") {
         audioReady++;
       }
     }
   }
 
   return {
-    ready: imagesReady === scene.shots.length && audioReady === totalAudio,
+    ready: imagesReady > 0 && audioReady > 0,
     imagesReady,
     totalShots: scene.shots.length,
     audioReady,
@@ -170,19 +224,25 @@ async function prepareScene(opts: PrepareOptions) {
 
   const manifest = yaml.load(
     fs.readFileSync(manifestPath, "utf-8")
-  ) as { files: ManifestEntry[] };
+  ) as Manifest;
+
+  const entries = manifest.scenes || manifest.files || [];
+  if (entries.length === 0) {
+    log("manifest 中无场景数据（需要 scenes 或 files 字段）", "ERROR");
+    process.exit(1);
+  }
 
   let sceneEntries: ManifestEntry[];
   if (sceneId === "all") {
-    sceneEntries = manifest.files;
+    sceneEntries = entries;
   } else {
-    sceneEntries = manifest.files.filter(
+    sceneEntries = entries.filter(
       (f) => f.scene_id === sceneId
     );
     if (sceneEntries.length === 0) {
       log(`未找到场景: ${sceneId}`, "ERROR");
       log("可用场景:");
-      for (const f of manifest.files) {
+      for (const f of entries) {
         log(`  ${f.scene_id} - ${f.scene_name}`);
       }
       process.exit(1);
@@ -192,7 +252,8 @@ async function prepareScene(opts: PrepareOptions) {
   const allSceneProps = [];
 
   for (const entry of sceneEntries) {
-    const scenePath = path.join(shotsDir, entry.file);
+    const sceneFile = entry.shot_file || entry.file || `${entry.scene_id}.yaml`;
+    const scenePath = path.join(shotsDir, sceneFile);
     if (!fs.existsSync(scenePath)) {
       log(`场景文件不存在: ${scenePath}`, "WARN");
       continue;
@@ -218,73 +279,78 @@ async function prepareScene(opts: PrepareOptions) {
     const preparedShots = [];
 
     for (const shot of scene.shots) {
-      log(`  处理镜头: ${shot.id}`);
+      const shotId = getShotId(shot);
+      const shotLines = getShotLines(shot);
+      log(`  处理镜头: ${shotId}`);
 
-      const imageExt = (shot.image_url || "").split(".").pop()?.split("?")[0] || "png";
-      const imageDest = path.join(
-        publicDir,
-        "images",
-        `${shot.id}.${imageExt}`
-      );
-      const imageSrc = `images/${shot.id}.${imageExt}`;
+      if (!shot.image_url || shot.image_status !== "completed") {
+        log(`  缺少图片，跳过镜头 ${shotId}`, "WARN");
+        continue;
+      }
+
+      const imageExt = extractExt(shot.image_url, "png");
+      const imageDest = path.join(publicDir, "images", `${shotId}.${imageExt}`);
+      const imageSrc = `images/${shotId}.${imageExt}`;
 
       try {
-        await downloadFile(shot.image_url!, imageDest);
+        await downloadFile(shot.image_url, imageDest);
         log(`  ✓ 图片下载完成`);
       } catch (err) {
-        log(
-          `  图片下载失败: ${(err as Error).message}`,
-          "ERROR"
-        );
+        log(`  图片下载失败: ${(err as Error).message}`, "ERROR");
         continue;
       }
 
       const preparedLines = [];
       let totalDuration = 0;
 
-      for (let i = 0; i < (shot.lines || []).length; i++) {
-        const line = shot.lines[i];
-        const audioExt = (line.audio_url || "").split(".").pop()?.split("?")[0] || "mp3";
+      for (let i = 0; i < shotLines.length; i++) {
+        const line = shotLines[i];
+        if (!line.audioUrl) {
+          log(`    跳过无音频的台词 ${i}`, "WARN");
+          continue;
+        }
+
+        const audioExt = extractExt(line.audioUrl, "mp3");
         const audioDest = path.join(
-          publicDir,
-          "audio",
-          `${shot.id}_line_${String(i).padStart(2, "0")}.${audioExt}`
+          publicDir, "audio",
+          `${shotId}_line_${String(i).padStart(2, "0")}.${audioExt}`
         );
-        const audioSrc = `audio/${shot.id}_line_${String(i).padStart(2, "0")}.${audioExt}`;
+        const audioSrc = `audio/${shotId}_line_${String(i).padStart(2, "0")}.${audioExt}`;
 
         try {
-          await downloadFile(line.audio_url!, audioDest);
+          await downloadFile(line.audioUrl, audioDest);
           const duration = getAudioDuration(audioDest);
           totalDuration += duration;
 
           preparedLines.push({
             speaker: line.speaker,
             text: line.text,
-            emotion: line.emotion,
+            emotion: undefined,
             audioSrc,
             durationInSeconds: duration,
           });
           log(`    ✓ 音频 ${i}: ${duration.toFixed(1)}s`);
         } catch (err) {
-          log(
-            `    音频下载失败: ${(err as Error).message}`,
-            "ERROR"
-          );
+          log(`    音频下载失败: ${(err as Error).message}`, "ERROR");
         }
       }
 
       if (preparedLines.length === 0) {
-        log(`  无有效音频，跳过镜头 ${shot.id}`, "WARN");
+        log(`  无有效音频，跳过镜头 ${shotId}`, "WARN");
         continue;
       }
 
       const paddedDuration = totalDuration + 0.5;
       const durationInFrames = Math.ceil(paddedDuration * fps);
 
+      const shotTitle = shot.content
+        ? parseShotContent(shot.content).text.slice(0, 60)
+        : shot.title || shotId;
+
       preparedShots.push({
-        id: shot.id,
-        title: shot.title,
-        shotType: shot.shot_type,
+        id: shotId,
+        title: shotTitle,
+        shotType: shot.type || shot.shot_type,
         imageSrc,
         lines: preparedLines,
         totalDurationInSeconds: totalDuration,
@@ -293,9 +359,7 @@ async function prepareScene(opts: PrepareOptions) {
         lighting: shot.lighting,
       });
 
-      log(
-        `  ✓ 镜头 ${shot.id}: ${totalDuration.toFixed(1)}s, ${durationInFrames} 帧`
-      );
+      log(`  ✓ 镜头 ${shotId}: ${totalDuration.toFixed(1)}s, ${durationInFrames} 帧`);
     }
 
     if (preparedShots.length === 0) {

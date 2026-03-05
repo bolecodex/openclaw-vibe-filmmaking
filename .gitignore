@@ -1,5 +1,8 @@
 .DS_Store
 node_modules/
+target/
+dist/
+*.tsbuildinfo
 
 *.mp3
 *.mp4
