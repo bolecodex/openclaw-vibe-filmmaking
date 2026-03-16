@@ -337,6 +337,10 @@ export function getShots(projectName: string, sceneId?: string): {
           audio_path: audioPath ?? undefined,
           audio_status: audioStatus ?? "pending",
           audio_speaker: audioSpeaker ?? undefined,
+          video_url: s.video_url ?? undefined,
+          video_path: s.video_path ?? undefined,
+          video_status: s.video_status ?? "pending",
+          video_mode: s.video_mode ?? undefined,
           duration_sec: s.duration ?? s.duration_sec ?? undefined,
         };
       });
@@ -424,6 +428,44 @@ export function updateScene(
   if (idx === -1) return false;
 
   data.scenes[idx] = { ...data.scenes[idx], ...patch };
+  writeFileSync(filePath, YAML.stringify(data, { lineWidth: 0 }), "utf-8");
+  return true;
+}
+
+export function getProps(projectName: string): unknown[] {
+  const projectDir = join(getWorkspaceDir(), projectName);
+  if (!existsSync(projectDir)) return [];
+
+  const files = readdirSync(projectDir);
+  const propFile = files.find((f) => f.endsWith("_道具资产.yaml"));
+  if (!propFile) return [];
+
+  const filePath = join(projectDir, propFile);
+  const data = YAML.parse(readFileSync(filePath, "utf-8"));
+  return data?.props ?? data?.items ?? [];
+}
+
+export function updateProp(
+  projectName: string,
+  propId: string,
+  patch: Record<string, unknown>,
+): boolean {
+  const projectDir = join(getWorkspaceDir(), projectName);
+  const files = readdirSync(projectDir);
+  const propFile = files.find((f) => f.endsWith("_道具资产.yaml"));
+  if (!propFile) return false;
+
+  const filePath = join(projectDir, propFile);
+  const data = YAML.parse(readFileSync(filePath, "utf-8"));
+  const list = data?.props ?? data?.items;
+  if (!Array.isArray(list)) return false;
+
+  const idx = list.findIndex(
+    (p: Record<string, unknown>) => p.id === propId,
+  );
+  if (idx === -1) return false;
+
+  list[idx] = { ...list[idx], ...patch };
   writeFileSync(filePath, YAML.stringify(data, { lineWidth: 0 }), "utf-8");
   return true;
 }

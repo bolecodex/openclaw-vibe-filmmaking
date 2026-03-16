@@ -42,7 +42,10 @@ interface SSEPayload {
   usage?: TokenUsage;
 }
 
-export function useChat(onComplete?: () => void) {
+export function useChat(
+  onComplete?: () => void,
+  onUiAction?: (action: string, target: string) => void,
+) {
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -162,9 +165,11 @@ export function useChat(onComplete?: () => void) {
         setIsStreaming(false);
         abortRef.current = null;
         onComplete?.();
+        // 后端/Agent 可能在流结束后才写入分镜图等文件，延迟再拉一次以更新界面
+        if (onComplete) setTimeout(onComplete, 2500);
       }
     },
-    [onComplete, setMessages],
+    [onComplete, onUiAction, setMessages],
   );
 
   function applySSEEvent(
@@ -298,6 +303,8 @@ export function useChat(onComplete?: () => void) {
           ),
         );
       }
+      // Refetch relevant data so UI (e.g. character image) updates after agent edits
+      onUiAction?.(action, target);
       return;
     }
 

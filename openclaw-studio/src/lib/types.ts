@@ -72,6 +72,22 @@ export interface SceneInfo {
   notes?: string;
   content?: string;
   fileName?: string;
+  /** 场景图：远程 URL（可能过期） */
+  image_url?: string;
+  /** 场景图：本地相对路径，优先使用 */
+  image_path?: string;
+  image_status?: string;
+}
+
+/** 道具/物品（武器、信物、法宝等） */
+export interface PropItem {
+  id: string;
+  name: string;
+  description: string;
+  category?: string;
+  image_url?: string;
+  image_path?: string;
+  image_status?: string;
 }
 
 export interface ShotInfo {
@@ -90,6 +106,10 @@ export interface ShotInfo {
   audio_path?: string;
   audio_status?: string;
   audio_speaker?: string;
+  video_url?: string;
+  video_path?: string;
+  video_status?: string;
+  video_mode?: string;
   duration_sec?: number;
 }
 
@@ -136,7 +156,7 @@ export interface MarketplaceSkill {
   installed: boolean;
 }
 
-export type MentionType = "file" | "character" | "scene" | "shot" | "skill";
+export type MentionType = "file" | "character" | "scene" | "shot" | "skill" | "audio" | "video";
 
 export interface MentionRef {
   type: MentionType;

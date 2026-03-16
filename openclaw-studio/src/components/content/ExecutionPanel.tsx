@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
   X,
@@ -28,9 +29,12 @@ function ToolOutput({ output }: { output: string }) {
   const lines = output.split("\n");
   const isLong = lines.length > 4 || output.length > 300;
 
+  const preClass =
+    "mt-1 overflow-x-auto overflow-y-auto rounded bg-surface-3/40 px-2 py-1 text-[11px] leading-relaxed text-gray-500 font-mono whitespace-pre";
+
   if (!isLong) {
     return (
-      <pre className="mt-1 whitespace-pre-wrap break-all rounded bg-surface-3/40 px-2 py-1 text-[11px] leading-relaxed text-gray-500">
+      <pre className={`${preClass} max-w-full`} style={{ wordBreak: "break-word" }}>
         {output}
       </pre>
     );
@@ -46,7 +50,7 @@ function ToolOutput({ output }: { output: string }) {
         {expanded ? "收起输出" : `展开输出 (${lines.length} 行)`}
       </button>
       {expanded && (
-        <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-surface-3/40 px-2 py-1.5 text-[11px] leading-relaxed text-gray-500">
+        <pre className={`${preClass} max-h-40 max-w-full`} style={{ wordBreak: "break-word" }}>
           {output}
         </pre>
       )}
@@ -61,8 +65,8 @@ function LogEntry({ log, index }: { log: ExecutionLog; index: number }) {
     return (
       <div className="flex gap-2 py-0.5">
         <MessageSquare size={12} className="mt-0.5 shrink-0 text-gray-600" />
-        <div className="min-w-0 flex-1">
-          <span className="whitespace-pre-wrap break-words text-[12px] leading-relaxed text-gray-300">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <span className="block overflow-x-auto whitespace-pre-wrap break-words text-[12px] leading-relaxed text-gray-300">
             {log.content}
           </span>
         </div>
@@ -74,9 +78,11 @@ function LogEntry({ log, index }: { log: ExecutionLog; index: number }) {
     return (
       <div className="flex gap-2 py-0.5">
         <Brain size={12} className="mt-0.5 shrink-0 text-violet-500/60" />
-        <span className="text-[11px] italic leading-relaxed text-gray-500/80">
-          {log.content}
-        </span>
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <span className="block overflow-x-auto whitespace-pre-wrap break-words text-[11px] italic leading-relaxed text-gray-500/80">
+            {log.content}
+          </span>
+        </div>
       </div>
     );
   }
@@ -133,9 +139,11 @@ function LogEntry({ log, index }: { log: ExecutionLog; index: number }) {
     return (
       <div className="flex gap-2 rounded-md bg-red-500/8 px-2 py-1.5">
         <AlertTriangle size={12} className="mt-0.5 shrink-0 text-red-400" />
-        <span className="whitespace-pre-wrap break-words text-[12px] leading-relaxed text-red-400">
-          {log.content}
-        </span>
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <span className="block overflow-x-auto whitespace-pre-wrap break-words text-[12px] leading-relaxed text-red-400">
+            {log.content}
+          </span>
+        </div>
       </div>
     );
   }
@@ -171,100 +179,123 @@ export function ExecutionPanel() {
     (l) => l.type === "tool_start" || l.type === "tool_update",
   ).length;
 
-  if (executionMinimized) {
-    return (
-      <div className="flex items-center gap-2.5 border-t border-white/5 bg-surface-2/80 px-4 py-2">
-        {isRunning && (
-          <Loader2 size={13} className="animate-spin text-accent" />
-        )}
-        <span
-          className={`flex-1 text-xs ${isRunning ? "text-gray-300" : "text-gray-500"}`}
-        >
-          {isRunning ? `执行中: ${stepName}` : `已完成: ${stepName}`}
-        </span>
-        {logCount > 0 && (
-          <span className="text-[10px] text-gray-600">
-            {logCount} 条日志
-          </span>
-        )}
-        <button
-          onClick={() => setExecutionMinimized(false)}
-          className="rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
-        >
-          <Maximize2 size={13} />
-        </button>
-        {!isRunning && (
-          <button
-            onClick={() =>
-              usePipelineStore.setState({ executionLogs: [] })
-            }
-            className="rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
-          >
-            <X size={13} />
-          </button>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex max-h-64 flex-col border-t border-white/8 bg-surface-1">
-      {/* Header */}
-      <div className="flex items-center gap-2.5 border-b border-white/5 px-4 py-2">
-        {isRunning ? (
-          <Loader2 size={13} className="animate-spin text-accent" />
-        ) : (
-          <CheckCircle2 size={13} className="text-emerald-400" />
-        )}
-        <span className="flex-1 text-xs font-medium text-gray-200">
-          {isRunning ? `执行中: ${stepName}` : `已完成: ${stepName}`}
-        </span>
-        {toolCount > 0 && (
-          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-gray-500">
-            {toolCount} 次工具调用
-          </span>
-        )}
-        {isRunning && (
-          <button
-            onClick={stopExecution}
-            className="flex items-center gap-1.5 rounded-md bg-red-500/15 px-2.5 py-1 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-500/25"
-          >
-            <Square size={9} />
-            停止
-          </button>
-        )}
-        <button
-          onClick={() => setExecutionMinimized(true)}
-          className="rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
+    <AnimatePresence>
+      {executionMinimized ? (
+        <motion.div
+          key="minimized"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex items-center gap-2.5 border-t border-white/5 bg-surface-2/80 px-4 py-2"
         >
-          <Minimize2 size={13} />
-        </button>
-        {!isRunning && (
+          {isRunning && (
+            <Loader2 size={13} className="animate-spin text-accent" />
+          )}
+          <span
+            className={`flex-1 text-xs ${isRunning ? "text-gray-300" : "text-gray-500"}`}
+          >
+            {isRunning ? `执行中: ${stepName}` : `已完成: ${stepName}`}
+          </span>
+          {logCount > 0 && (
+            <span className="text-[10px] text-gray-600">
+              {logCount} 条日志
+            </span>
+          )}
           <button
-            onClick={() =>
-              usePipelineStore.setState({ executionLogs: [] })
-            }
+            onClick={() => setExecutionMinimized(false)}
             className="rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
           >
-            <X size={13} />
+            <Maximize2 size={13} />
           </button>
-        )}
-      </div>
-
-      {/* Log area */}
-      <div ref={scrollRef} className="flex-1 overflow-auto px-4 py-2">
-        <div className="flex flex-col gap-1">
-          {executionLogs.map((log, i) => (
-            <LogEntry key={i} log={log} index={i} />
-          ))}
-          {isRunning && executionLogs.length === 0 && (
-            <div className="flex items-center gap-2 py-4 text-gray-600">
-              <Loader2 size={14} className="animate-spin" />
-              <span className="text-xs">等待 Agent 响应...</span>
-            </div>
+          {!isRunning && (
+            <button
+              onClick={() =>
+                usePipelineStore.setState({ executionLogs: [] })
+              }
+              className="rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
+            >
+              <X size={13} />
+            </button>
           )}
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          key="expanded"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex max-h-64 flex-col border-t border-white/8 bg-surface-1"
+        >
+          <div className="flex items-center gap-2.5 border-b border-white/5 px-4 py-2">
+            {isRunning ? (
+              <Loader2 size={13} className="animate-spin text-accent" />
+            ) : (
+              <CheckCircle2 size={13} className="text-emerald-400" />
+            )}
+            <span className="flex-1 text-xs font-medium text-gray-200">
+              {isRunning ? `执行中: ${stepName}` : `已完成: ${stepName}`}
+            </span>
+            {toolCount > 0 && (
+              <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-gray-500">
+                {toolCount} 次工具调用
+              </span>
+            )}
+            {isRunning && (
+              <button
+                onClick={stopExecution}
+                className="flex items-center gap-1.5 rounded-md bg-red-500/15 px-2.5 py-1 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-500/25"
+              >
+                <Square size={9} />
+                停止
+              </button>
+            )}
+            <button
+              onClick={() => setExecutionMinimized(true)}
+              className="rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
+            >
+              <Minimize2 size={13} />
+            </button>
+            {!isRunning && (
+              <button
+                onClick={() =>
+                  usePipelineStore.setState({ executionLogs: [] })
+                }
+                className="rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          <div ref={scrollRef} className="flex-1 overflow-auto px-4 py-2">
+            <div className="flex flex-col gap-1">
+              {executionLogs.map((log, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -4 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <LogEntry log={log} index={i} />
+                </motion.div>
+              ))}
+              {isRunning && executionLogs.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-center gap-2 py-4 text-gray-600"
+                >
+                  <Loader2 size={14} className="animate-spin" />
+                  <span className="text-xs">等待 Agent 响应...</span>
+                </motion.div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

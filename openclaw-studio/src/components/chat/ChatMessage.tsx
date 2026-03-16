@@ -1,5 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { Wrench } from "lucide-react";
 import type {
   ChatMessage as ChatMessageType,
   ToolCallInfo,
@@ -12,6 +13,8 @@ const MENTION_TYPE_COLORS: Record<string, string> = {
   scene: "bg-emerald-500/20 text-emerald-300",
   shot: "bg-blue-500/20 text-blue-300",
   skill: "bg-purple-500/20 text-purple-300",
+  audio: "bg-cyan-500/20 text-cyan-300",
+  video: "bg-orange-500/20 text-orange-300",
 };
 
 function highlightMentions(text: string): (string | JSX.Element)[] {
@@ -255,10 +258,19 @@ export function ChatMessage({ message }: { message: ChatMessageType }) {
             {hasThinking && <ThinkingPanel thinking={message.thinking!} />}
 
             {hasToolCalls && (
-              <div className="flex flex-col gap-1.5 mb-1.5">
-                {message.toolCalls!.map((tc) => (
-                  <ToolCallItem key={tc.id} tc={tc} />
-                ))}
+              <div className="mb-2">
+                <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-gray-400">
+                  <Wrench size={12} className="shrink-0 text-amber-500/80" />
+                  <span>调用的工具 / Skills</span>
+                  <span className="rounded bg-white/10 px-1.5 py-0.5 tabular-nums text-gray-500">
+                    {message.toolCalls!.length} 个
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {message.toolCalls!.map((tc) => (
+                    <ToolCallItem key={tc.id} tc={tc} />
+                  ))}
+                </div>
               </div>
             )}
 

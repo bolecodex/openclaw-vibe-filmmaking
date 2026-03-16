@@ -83,6 +83,24 @@ const REVIEW_RULES: Record<string, ReviewRule[]> = {
     { id: "names-correct", label: "角色名称准确", type: "manual" },
     { id: "style-match", label: "角色风格与 style.yaml 一致", type: "manual" },
   ],
+  "extract-props": [
+    {
+      id: "has-output", label: "道具资产文件已生成", type: "auto",
+      check: (p) => ({ passed: !!findFile(p, "_道具资产.yaml"), detail: undefined }),
+    },
+    {
+      id: "has-items", label: "道具数量 >= 1", type: "auto",
+      check: (p) => {
+        const f = findFile(p, "_道具资产.yaml");
+        if (!f) return { passed: false, detail: "无文件" };
+        const d = safeReadYaml(f);
+        const list = (d?.props ?? d?.items) as unknown[] | undefined;
+        const n = Array.isArray(list) ? list.length : 0;
+        return { passed: n >= 1, detail: `${n} 个道具` };
+      },
+    },
+    { id: "props-match-style", label: "道具风格与剧本一致", type: "manual" },
+  ],
   "script-to-scenes": [
     {
       id: "has-scenes", label: "场景文件已生成", type: "auto",
@@ -97,6 +115,20 @@ const REVIEW_RULES: Record<string, ReviewRule[]> = {
       check: (p) => { const n = countSceneFiles(p); return { passed: n >= 3 && n <= 50, detail: `实际: ${n}` }; },
     },
     { id: "content-check", label: "场景内容完整无遗漏", type: "manual" },
+  ],
+  "scenes-to-images": [
+    {
+      id: "has-scene-images", label: "所有场景已有场景图", type: "auto",
+      check: (p) => {
+        const indexFile = findFile(p, "_场景索引.yaml");
+        if (!indexFile) return { passed: false, detail: "无场景索引" };
+        const data = safeReadYaml(indexFile);
+        const scenes = (data?.scenes as Record<string, unknown>[]) ?? [];
+        const withImage = scenes.filter((s) => s.image_path || s.image_url || s.image_status === "completed").length;
+        return { passed: scenes.length > 0 && withImage === scenes.length, detail: `${withImage}/${scenes.length}` };
+      },
+    },
+    { id: "scene-image-quality", label: "场景图风格统一、符合设定", type: "manual" },
   ],
   "scenes-to-storyboard": [
     {

@@ -1,18 +1,36 @@
 import type { ComponentType } from "react";
+import type { LucideIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Workflow,
+  Palette,
+  Users,
+  Film,
+  Package,
+  Clapperboard,
+  Image,
+  AudioLines,
+  Video,
+  Scissors,
+  FlaskConical,
+} from "lucide-react";
 import { Dashboard } from "../components/content/Dashboard";
 import { PipelineView } from "../components/content/PipelineView";
 import { StylePanel } from "../components/content/StylePanel";
 import { CharacterView } from "../components/content/CharacterView";
 import { SceneList } from "../components/content/SceneList";
+import { PropsView } from "../components/content/PropsView";
 import { StoryboardView } from "../components/content/StoryboardView";
 import { AudioView } from "../components/content/AudioView";
 import { ImageGalleryView } from "../components/content/ImageGalleryView";
+import { AiVideoView } from "../components/content/AiVideoView";
 import { VideoPage } from "../components/content/VideoPage";
 import { TestReportView } from "../components/content/TestReportView";
 
 export interface ViewDefinition {
   id: string;
   label: string;
+  icon?: LucideIcon;
   order: number;
   visible: boolean;
   component: ComponentType<any>;
@@ -28,6 +46,7 @@ export const UI_VIEWS: ViewDefinition[] = [
   {
     id: "dashboard",
     label: "概览",
+    icon: LayoutDashboard,
     order: 0,
     visible: true,
     component: Dashboard,
@@ -36,6 +55,7 @@ export const UI_VIEWS: ViewDefinition[] = [
   {
     id: "pipeline",
     label: "流水线",
+    icon: Workflow,
     order: 0.5,
     visible: true,
     component: PipelineView,
@@ -44,6 +64,7 @@ export const UI_VIEWS: ViewDefinition[] = [
   {
     id: "style",
     label: "风格",
+    icon: Palette,
     order: 1,
     visible: true,
     component: StylePanel,
@@ -52,6 +73,7 @@ export const UI_VIEWS: ViewDefinition[] = [
   {
     id: "characters",
     label: "角色",
+    icon: Users,
     order: 2,
     visible: true,
     component: CharacterView,
@@ -60,14 +82,26 @@ export const UI_VIEWS: ViewDefinition[] = [
   {
     id: "scenes",
     label: "场景",
+    icon: Film,
     order: 3,
     visible: true,
     component: SceneList,
     focusable: { type: "scene", labelSingular: "场景" },
   },
   {
+    id: "props",
+    label: "道具",
+    icon: Package,
+    order: 3.5,
+    visible: true,
+    component: PropsView,
+    focusable: { type: "prop", labelSingular: "道具" },
+    agentHint: "道具/物品资产（武器、信物等）及配图",
+  },
+  {
     id: "shots",
-    label: "分镜",
+    label: "分镜图",
+    icon: Clapperboard,
     order: 4,
     visible: true,
     component: StoryboardView,
@@ -76,13 +110,15 @@ export const UI_VIEWS: ViewDefinition[] = [
   {
     id: "images",
     label: "图片",
+    icon: Image,
     order: 5,
-    visible: true,
+    visible: false,
     component: ImageGalleryView,
   },
   {
     id: "audio",
     label: "音频",
+    icon: AudioLines,
     order: 6,
     visible: true,
     component: AudioView,
@@ -90,14 +126,27 @@ export const UI_VIEWS: ViewDefinition[] = [
   {
     id: "video",
     label: "视频",
+    icon: Video,
     order: 7,
     visible: true,
+    component: AiVideoView,
+    focusable: { type: "shot", labelSingular: "镜头" },
+    agentHint: "AI 视频生成（Seedance），为每个分镜生成视频片段",
+  },
+  {
+    id: "editor",
+    label: "剪辑",
+    icon: Scissors,
+    order: 8,
+    visible: true,
     component: VideoPage,
+    agentHint: "视频合成与剪辑（Remotion），将分镜片段合并为完整视频",
   },
   {
     id: "test-report",
     label: "测试",
-    order: 8,
+    icon: FlaskConical,
+    order: 9,
     visible: true,
     component: TestReportView,
     agentHint: "流水线测试验收报告",

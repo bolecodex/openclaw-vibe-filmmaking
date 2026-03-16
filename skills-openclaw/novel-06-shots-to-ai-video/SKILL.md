@@ -1,21 +1,30 @@
 ---
 name: novel-06-shots-to-ai-video
-version: 1.0.0
-description: 将分镜头数据转换为 AI 动画视频。读取 shots/*.yaml 分镜文件，使用 Seedance Lite 模型生成视频片段，支持参考图生视频、图生视频和文生视频三种模式。当用户想要为分镜生成 AI 视频、制作动画片段、将分镜图片转为动态视频时使用此 skill。
+version: 2.0.0
+description: 将分镜头数据转换为 AI 动画视频。读取 shots/*.yaml 分镜文件，使用 Seedance 2.0 Pro 模型（火山方舟 Ark API）生成视频片段，支持图生视频和文生视频两种模式。当用户想要为分镜生成 AI 视频、制作动画片段、将分镜图片转为动态视频时使用此 skill。
 trigger: "AI视频|动画视频|shots to ai video|分镜视频|Seedance"
 tools: [filesystem, shell]
 ---
 
-# 分镜头 AI 视频生成
+# 分镜头 AI 视频生成（Seedance 2.0）
 
-> **API 调用方式**：本 skill 中的 `generate` / `get_result` 等 MCP 工具，通过 shell 调用 CLI 包装器执行：
+> **API 调用方式**：通过 shell 调用 CLI 包装器，直接请求火山方舟 Ark REST API：
 > ```bash
-> python /Users/m007/codes/long_video_skills/skills-openclaw/mcp-proxy/xskill_api.py generate --model MODEL --prompt PROMPT [--image_url URL] [--aspect_ratio RATIO] [--duration SEC]
-> python /Users/m007/codes/long_video_skills/skills-openclaw/mcp-proxy/xskill_api.py get_result --task_id TASK_ID
+> # 一站式生成（提交 + 等待 + 下载）
+> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py run --prompt PROMPT [--image_url URL] --duration SEC --resolution RES --aspect_ratio RATIO [--output PATH]
+>
+> # 分步操作
+> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py generate --prompt PROMPT [--image_url URL] --duration SEC --resolution RES --aspect_ratio RATIO
+> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py get --task_id TASK_ID
+> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py wait --task_id TASK_ID
 > ```
-> 工具返回 JSON 结果。`generate` 返回 `task_id`，然后用 `get_result` 轮询直到 `completed`。
+>
+> **环境变量**（在 `.env` 中配置）：
+> - `ARK_API_KEY` - 火山方舟 API Key（必需）
+> - `ARK_BASE_URL` - API 地址（默认 `https://ark.cn-beijing.volces.com/api/v3`）
+> - `SEEDANCE_MODEL` - 模型名（默认 `doubao-seedance-2-0-pro-260215`）
 
-使用 Seedance Lite 模型将分镜头数据转换为 AI 动画视频，根据角色参考图自动选择最佳生成模式。
+使用 Seedance 2.0 Pro（火山方舟 Ark API）将分镜头数据转换为 AI 动画视频。Seedance 2.0 使用统一模型，根据输入内容（纯文本 / 文本+图片）自动选择生成模式。
 
 ## 项目目录定位规则（必须首先执行）
 
@@ -40,13 +49,32 @@ tools: [filesystem, shell]
 
 ---
 
-## 模型选择策略
+## 模型说明
 
-| 优先级 | 条件 | 模型 | 说明 |
-|--------|------|------|------|
-| 1 | 有角色参考图 | `reference-to-video` | 角色外貌一致性最好 |
-| 2 | 有分镜图片(`image_url`) | `image-to-video` | 以分镜图为首帧生成动画 |
-| 3 | 无任何图片 | `text-to-video` | 纯文本描述生成视频 |
+Seedance 2.0 Pro（`doubao-seedance-2-0-pro-260215`）是统一模型，根据 `content` 数组中的输入类型自动切换模式：
+
+| 输入内容 | 生成模式 | 说明 |
+|---------|---------|------|
+| 仅 `text` | 文生视频 | 纯文本描述生成视频 |
+| `image_url` + `text` | 图生视频 | 以图片为首帧，文本描述动作 |
+
+> Seedance 2.0 不再区分 reference-to-video / image-to-video / text-to-video 子模型，统一使用一个模型。
+
+## 生成模式选择策略
+
+```python
+for shot in scene.shots:
+    if shot.image_url and shot.image_status == "completed":
+        # 模式 1：图生视频（推荐，以分镜图做首帧）
+        generate_image_to_video(shot)
+    else:
+        # 模式 2：文生视频
+        generate_text_to_video(shot)
+```
+
+> 优先使用图生视频模式，效果更稳定可控。
+
+---
 
 ## 工作流程
 
@@ -67,7 +95,6 @@ tools: [filesystem, shell]
 ```
 {项目目录}/style.yaml                    # 全局风格配置（视频参数）
 {项目目录}/shots/_manifest.yaml          # 分镜索引
-{项目目录}/{剧本名}_角色资产.yaml        # 角色图片
 ```
 
 ### 1.1 从 `style.yaml` 提取视频参数
@@ -84,16 +111,6 @@ duration_default = style_yaml['video']['duration_default']  # 默认时长，如
 - `characters`: 角色 ID 与描述映射
 - `files`: 所有场景分镜文件列表
 
-### 1.3 从角色资产 YAML 提取角色图片 URL 映射表
-
-```python
-# 从 {剧本名}_角色资产.yaml 提取
-角色图片映射 = {}
-for char in yaml_data['characters']:
-    if char.get('image_url') and char.get('image_status') == 'completed':
-        角色图片映射[char['id']] = char['image_url']
-```
-
 ---
 
 ## 步骤 2：选择场景
@@ -102,8 +119,8 @@ for char in yaml_data['characters']:
 
 ```
 可用场景：
-1. SC_01_开篇悬念 (2 镜头, 图片: 2/2 ✅)
-2. SC_02_西市日常 (4 镜头, 图片: 4/4 ✅)
+1. SC_01_开篇悬念 (2 镜头, 图片: 2/2)
+2. SC_02_西市日常 (4 镜头, 图片: 4/4)
 ...
 
 请选择要生成 AI 视频的场景编号（或 "all"）：
@@ -115,33 +132,9 @@ for char in yaml_data['characters']:
 
 ## 步骤 3：生成 AI 视频
 
-对每个镜头按优先级选择模式并生成视频。
+### 3.1 构建视频提示词
 
-### 3.1 判断生成模式
-
-```python
-# 伪代码
-for shot in scene.shots:
-    # 收集角色参考图
-    ref_images = []
-    for char in shot.characters:
-        if char.ref in 角色图片映射:
-            ref_images.append(角色图片映射[char.ref])
-    
-    if ref_images:
-        # 模式 1：参考图生视频（最优）
-        generate_reference_to_video(shot, ref_images)
-    elif shot.image_url and shot.image_status == "completed":
-        # 模式 2：图生视频（用分镜图做首帧）
-        generate_image_to_video(shot)
-    else:
-        # 模式 3：文生视频
-        generate_text_to_video(shot)
-```
-
-### 3.2 构建视频提示词
-
-视频提示词 = 动作描述 + 场景氛围，**不需要包含角色外貌特征**（参考图已提供）。
+视频提示词 = 动作描述 + 场景氛围。
 
 **提示词模板**：
 
@@ -152,105 +145,71 @@ for shot in scene.shots:
 {镜头运动描述}。
 ```
 
-**示例（SC_07_001）**：
+**示例**：
 
 ```
 简陋卧房内，雨夜暗调，窗外闪电偶尔照亮房间。
 一个女子惊醒坐起在床上，眼神惊恐地看向地面。
-一个男子躺在床边地上，面容扭曲挣扎，额上青筋暴起，口中念念有词。
-中景镜头，缓慢推近。
+一个男子躺在床边地上，面容扭曲挣扎，额上青筋暴起。
+中景镜头，缓慢推近，紧张恐惧氛围。
 ```
 
-> **注意**：参考图模式中，提示词中用"一个女子"、"一个男子"等泛称即可，因为模型会从参考图中识别角色外貌。若只有一个角色参考图，则该角色用泛称，提示词聚焦动作和场景。
+### 3.2 模式 1：图生视频（推荐）
 
-### 3.3 模式 1：参考图生视频（reference-to-video）
+当镜头有已完成的分镜图片时使用。以分镜图为首帧生成动画。
 
-当镜头有角色参考图时使用。参考图中的人物会出现在视频中。
-
-使用 MCP 工具 `generate`：
-
-```json
-{
-  "model": "fal-ai/bytedance/seedance/v1/lite/reference-to-video",
-  "prompt": "简陋卧房内，雨夜暗调...",
-  "aspect_ratio": "9:16",
-  "duration": "5",
-  "options": {
-    "reference_image_urls": [
-      "https://v3b.fal.media/苏晚.png",
-      "https://v3b.fal.media/陈屠.png"
-    ],
-    "resolution": "720p"
-  }
-}
+```bash
+python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py run \
+  --prompt "简陋卧房内，雨夜暗调，窗外闪电偶尔照亮房间。一个女子惊醒坐起在床上，眼神惊恐地看向地面。中景镜头，缓慢推近。" \
+  --image_url "https://example.com/shot_image.png" \
+  --duration 5 \
+  --resolution 720p \
+  --aspect_ratio 9:16
 ```
 
-**参数说明**：
-- `reference_image_urls`: 1-4 张角色参考图 URL
-- `aspect_ratio`: 与分镜图保持一致，默认 `9:16`
-- `resolution`: 默认 `720p`
-- `duration`: 默认 `5` 秒，可根据台词时长调整（2-12 秒）
+> 首帧图片已定义场景，提示词应聚焦于**动作**和**镜头运动**。
 
-### 3.4 模式 2：图生视频（image-to-video）
+### 3.3 模式 2：文生视频
 
-当无角色参考图但有分镜图片时使用。以分镜图为首帧生成动画。
+当无分镜图片时使用。纯文本描述生成视频。
 
-使用 MCP 工具 `generate`：
-
-```json
-{
-  "model": "fal-ai/bytedance/seedance/v1/lite/image-to-video",
-  "prompt": "画面中的人物开始动作...",
-  "image_url": "https://v3b.fal.media/分镜图.png",
-  "aspect_ratio": "9:16",
-  "duration": "5",
-  "options": {
-    "resolution": "720p"
-  }
-}
+```bash
+python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py run \
+  --prompt "真人写实高清，古风场景。简陋卧房内，雨夜暗调，窗外闪电偶尔照亮房间。一个女子惊醒坐起在床上，眼神惊恐地看向地面。中景镜头，缓慢推近。" \
+  --duration 5 \
+  --resolution 720p \
+  --aspect_ratio 9:16
 ```
 
-### 3.5 模式 3：文生视频（text-to-video）
+> 文生视频模式下，提示词需要包含完整的风格描述和角色外貌特征。使用 `style_base` + 原始 prompt。
 
-当无任何图片时使用。纯文本描述生成视频。
-
-使用 MCP 工具 `generate`：
-
-```json
-{
-  "model": "fal-ai/bytedance/seedance/v1/lite/text-to-video",
-  "prompt": "真人写实高清，古风场景...",
-  "aspect_ratio": "9:16",
-  "duration": "5",
-  "options": {
-    "resolution": "720p"
-  }
-}
-```
-
-> 文生视频模式下，提示词需要包含完整的风格描述和角色外貌特征（因为没有参考图）。此时使用 `style_base` + 原始 prompt。
-
-### 3.6 时长选择策略
+### 3.4 时长选择策略
 
 根据镜头台词数量和内容估算合适时长：
 
 | 台词数 | 建议时长 | 说明 |
 |--------|---------|------|
-| 0-1 条 | 3-4 秒 | 快速过渡镜头 |
+| 0-1 条 | 4-5 秒 | 快速过渡镜头 |
 | 2-3 条 | 5-6 秒 | 标准叙事镜头 |
 | 4-5 条 | 7-8 秒 | 重要剧情镜头 |
-| 6+ 条 | 10-12 秒 | 高潮/转折镜头 |
+| 6+ 条 | 10-15 秒 | 高潮/转折镜头 |
 
-> 这只是参考，最终视频会与音频在后期合成时对齐时长。AI 视频主要提供动画素材。
+> Seedance 2.0 支持 4-15 秒时长。
 
-### 3.7 查询任务结果
+### 3.5 查询任务结果
 
-使用 MCP 工具 `get_result` 轮询查询结果，获取生成的视频 URL。
+使用 `wait` 命令自动轮询直到完成：
 
-**轮询策略**：
-1. 提交任务后等待 30 秒
-2. 每 15 秒使用 `get_result` 查询一次状态
-3. 超时 5 分钟则标记失败
+```bash
+python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py wait --task_id TASK_ID --timeout 300
+```
+
+或者使用 `run` 命令一站式完成（推荐）。
+
+**轮询策略**（`run` 命令自动处理）：
+1. 提交任务后每 10 秒查询一次状态
+2. 超时 10 分钟则标记失败
+3. 状态为 `succeeded` 时提取视频 URL
 
 ---
 
@@ -263,11 +222,11 @@ for shot in scene.shots:
 ```yaml
 - id: "SC_07_001"
   # ... 其他字段保持不变
-  video_url: "https://v3b.fal.media/files/xxx.mp4"
+  video_url: "https://ark-output.../xxx.mp4"
   video_status: completed
-  video_mode: reference   # reference / image / text
+  video_mode: image   # image / text
   video_duration: "5"
-  video_generated_at: "2026-02-06T10:30:00"
+  video_generated_at: "2026-03-08T10:30:00"
 ```
 
 新增字段说明：
@@ -276,7 +235,7 @@ for shot in scene.shots:
 |------|------|------|
 | `video_url` | string | 生成视频的 URL |
 | `video_status` | string | `pending` / `completed` / `failed` |
-| `video_mode` | string | 生成模式: `reference` / `image` / `text` |
+| `video_mode` | string | 生成模式: `image` / `text` |
 | `video_duration` | string | 视频时长（秒） |
 | `video_generated_at` | string | 生成时间 |
 
@@ -286,19 +245,13 @@ for shot in scene.shots:
 ## 场景 SC_07_雨夜惊梦 AI 视频生成完成
 
 ### 镜头 SC_07_001: 雨夜惊醒
-- 模式：🎯 参考图生视频（苏晚 + 陈屠）
+- 模式：图生视频
 - 时长：5 秒
 - 视频：[点击查看](视频URL)
-- 状态：✅ 已写入 YAML
-
-### 镜头 SC_07_002: 梦中呓语
-- 模式：🎯 参考图生视频（陈屠）
-- 时长：5 秒
-- 视频：[点击查看](视频URL)
-- 状态：✅ 已写入 YAML
+- 状态：已写入 YAML
 
 ---
-✅ 已自动更新 YAML 文件
+已自动更新 YAML 文件
 如需重新生成某个镜头，请告诉我镜头编号。
 ```
 
@@ -306,7 +259,7 @@ for shot in scene.shots:
 
 ## 完整示例
 
-### 示例：生成 SC_07_001 镜头视频
+### 示例：生成 SC_07_001 镜头视频（图生视频模式）
 
 **镜头数据**：
 ```yaml
@@ -317,68 +270,60 @@ for shot in scene.shots:
     - ref: "@szj_suwan"
       action: 惊醒坐起
       emotion: 惊恐
-    - ref: "@szj_chentu"
-      action: 躺在地上挣扎
-      emotion: 梦中痛苦
   mood: 紧张、恐惧
   lighting: 雨夜暗调，闪电
+  image_url: "https://example.com/SC_07_001.png"
+  image_status: completed
 ```
 
-**角色图片映射**：
-```yaml
-"@szj_suwan": "https://v3b.fal.media/files/.../苏晚.png"
-"@szj_chentu": "https://v3b.fal.media/files/.../陈屠.png"
+**执行命令**：
+
+```bash
+python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py run \
+  --prompt "简陋卧房内，雨夜暗调，窗外闪电偶尔照亮房间。一个女子惊醒坐起在床上，眼神惊恐地看向地面。中景镜头，缓慢推近，紧张恐惧氛围。" \
+  --image_url "https://example.com/SC_07_001.png" \
+  --duration 5 \
+  --resolution 720p \
+  --aspect_ratio 9:16
 ```
 
-**判断**：两个角色都有参考图 → 使用 `reference-to-video`
-
-**构建提示词**：
-```
-简陋卧房内，雨夜暗调，窗外闪电偶尔照亮房间。
-一个女子惊醒坐起在床上，眼神惊恐地看向地面。
-一个男子躺在床边地上，面容扭曲挣扎，额上青筋暴起。
-中景镜头，缓慢推近，紧张恐惧氛围。
-```
-
-使用 MCP 工具 `generate`：
+**输出 JSON**（关键字段）：
 
 ```json
 {
-  "model": "fal-ai/bytedance/seedance/v1/lite/reference-to-video",
-  "prompt": "简陋卧房内，雨夜暗调，窗外闪电偶尔照亮房间。一个女子惊醒坐起在床上，眼神惊恐地看向地面。一个男子躺在床边地上，面容扭曲挣扎，额上青筋暴起。中景镜头，缓慢推近，紧张恐惧氛围。",
-  "aspect_ratio": "9:16",
-  "duration": "5",
-  "options": {
-    "reference_image_urls": [
-      "https://v3b.fal.media/files/.../苏晚.png",
-      "https://v3b.fal.media/files/.../陈屠.png"
-    ],
-    "resolution": "720p"
-  }
+  "id": "task-xxxxx",
+  "status": "succeeded",
+  "content": [
+    {
+      "type": "video_url",
+      "video_url": {"url": "https://ark-output.../video.mp4"}
+    }
+  ]
 }
 ```
+
+从 `content[0].video_url.url` 提取视频地址，写入 YAML。
 
 ---
 
 ## 批量生成策略
 
-### 并行提交
+### 逐个提交并等待
 
-由于视频生成耗时较长（约 60-120 秒/个），建议：
+由于视频生成耗时较长（约 30-120 秒/个），建议：
 
-1. 一次提交一个场景的所有镜头任务
-2. 使用 `generate` 提交后记录 `task_id`
-3. 等待一段时间后批量查询结果
-4. 每完成一个镜头立即写入 YAML
+1. 逐个镜头使用 `run` 命令（自动等待完成）
+2. 每完成一个镜头立即写入 YAML
+3. 记录已完成的镜头，断点续传
 
 ### 重试策略
 
 | 失败原因 | 处理方式 |
 |---------|---------|
-| 角色图片 URL 失效 | 提示用户重新生成角色图片 |
+| 图片 URL 失效 | 提示用户重新生成分镜图片 |
 | 生成超时 | 自动重试 1 次 |
 | 内容审核失败 | 调整提示词后重试 |
-| 角色无参考图 | 回退到图生视频或文生视频模式 |
+| 无分镜图片 | 回退到文生视频模式 |
 
 ---
 
@@ -402,29 +347,8 @@ for shot in scene.shots:
 |--------|------|------|---------|
 | `480p` | 快 | 一般 | 快速预览 |
 | `720p` | 中 | 好 | 正式生成（默认）|
+| `1080p` | 慢 | 最佳 | 高质量成品 |
 
 ### duration 范围
 
-支持 2-12 秒，以字符串形式传入（如 `"5"`）。
-
----
-
-## 步骤 5：刷新可视化页面
-
-完成 AI 视频生成后，**必须**运行脚本刷新 HTML 可视化页面，让视频播放器在页面中展示：
-
-```bash
-python /Users/m007/codes/long_video_skills/skills-openclaw/novel-03-scenes-to-storyboard/scripts/generate_storyboard.py --project "{项目目录}/"
-```
-
-> 该脚本读取所有 `shots/*.yaml` 中的最新数据（包括刚写入的 `video_url`），重新生成 `{项目目录}/index.html`。
-
-```bash
-open "{项目目录}/index.html"
-```
-
-**页面展示内容**：
-- 每个镜头的视频播放器（如有 `video_url`，使用分镜图作为封面）
-- 视频生成模式标签（reference / image / text）
-- 视频时长显示
-- 统计面板：已生视频/总镜头数
+Seedance 2.0 支持 4-15 秒。

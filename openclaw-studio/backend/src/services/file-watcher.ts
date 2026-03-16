@@ -7,6 +7,7 @@ export type PanelType =
   | "style"
   | "characters"
   | "scenes"
+  | "props"
   | "shots"
   | "images"
   | "audio"
@@ -25,6 +26,7 @@ function inferPanel(filePath: string): PanelType | null {
   if (name === "style.yaml") return "style";
   if (name.endsWith("_角色资产.yaml")) return "characters";
   if (name.endsWith("_场景索引.yaml")) return "scenes";
+  if (name.endsWith("_道具资产.yaml")) return "props";
   if (filePath.includes("/scenes/")) return "scenes";
   if (filePath.includes("/shots/")) return "shots";
   if (filePath.includes("/images/")) return "images";

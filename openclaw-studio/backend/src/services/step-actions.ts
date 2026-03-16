@@ -67,6 +67,33 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
     contentTab: "characters",
   },
   {
+    id: "extract-props",
+    name: "提取道具",
+    skill: "novel-prop-extractor",
+    order: 1.5,
+    dependsOn: [],
+    optional: true,
+    actions: [
+      { id: "run", label: "提取全部道具", variant: "primary" },
+      { id: "generate-images", label: "全部道具出图", variant: "secondary" },
+      { id: "regenerate-one", label: "选中道具出图", variant: "secondary", requiresSelection: true },
+    ],
+    params: [
+      {
+        key: "image_model",
+        label: "图片模型",
+        type: "select",
+        options: [
+          { value: "seedream-5.0-lite", label: "Seedream 5.0 Lite" },
+          { value: "seedream-4.5", label: "Seedream 4.5" },
+          { value: "nano-banana-pro", label: "Nano Banana Pro" },
+        ],
+        default: "seedream-5.0-lite",
+      },
+    ],
+    contentTab: "props",
+  },
+  {
     id: "script-to-scenes",
     name: "剧本转场景",
     skill: "novel-02-script-to-scenes",
@@ -82,6 +109,44 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
         label: "每行最大字数",
         type: "number",
         default: 15,
+      },
+    ],
+    contentTab: "scenes",
+  },
+  {
+    id: "scenes-to-images",
+    name: "场景出图",
+    skill: "novel-scenes-to-images",
+    order: 2.5,
+    dependsOn: ["script-to-scenes"],
+    optional: true,
+    actions: [
+      { id: "run", label: "全部场景出图", variant: "primary" },
+      { id: "regenerate-one", label: "选中场景出图", variant: "secondary", requiresSelection: true },
+    ],
+    params: [
+      {
+        key: "image_model",
+        label: "图片模型",
+        type: "select",
+        options: [
+          { value: "seedream-5.0-lite", label: "Seedream 5.0 Lite" },
+          { value: "seedream-4.5", label: "Seedream 4.5" },
+          { value: "flux-2-flash", label: "Flux 2 Flash" },
+          { value: "nano-banana-pro", label: "Nano Banana Pro" },
+        ],
+        default: "seedream-5.0-lite",
+      },
+      {
+        key: "image_size",
+        label: "图片尺寸",
+        type: "select",
+        options: [
+          { value: "landscape_16_9", label: "横版 16:9" },
+          { value: "portrait_16_9", label: "竖版 16:9" },
+          { value: "square_1_1", label: "正方形 1:1" },
+        ],
+        default: "landscape_16_9",
       },
     ],
     contentTab: "scenes",
@@ -145,7 +210,7 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
         default: true,
       },
     ],
-    contentTab: "images",
+    contentTab: "shots",
   },
   {
     id: "shots-to-audio",
@@ -191,10 +256,10 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
         label: "视频模型",
         type: "select",
         options: [
-          { value: "seedance-lite", label: "Seedance Lite" },
-          { value: "seedance-2.0", label: "Seedance 2.0" },
+          { value: "seedance-2.0", label: "Seedance 2.0 Pro" },
+          { value: "seedance-lite", label: "Seedance Lite (旧版)" },
         ],
-        default: "seedance-lite",
+        default: "seedance-2.0",
       },
       {
         key: "video_duration",

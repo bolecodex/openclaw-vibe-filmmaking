@@ -44,7 +44,7 @@ interface AgentContext {
 }
 
 interface MentionRef {
-  type: "file" | "character" | "scene" | "shot" | "skill";
+  type: "file" | "character" | "scene" | "shot" | "skill" | "audio" | "video";
   id: string;
   label: string;
 }
@@ -116,12 +116,18 @@ export function buildContextPrompt(context?: AgentContext | null): string {
     ];
     if (context.focus.characterName) {
       focusInstructions.push(`  → 目标角色: ${context.focus.characterName} (ID: ${context.focus.characterId})`);
+      focusInstructions.push(
+        "  → 角色改图说明：当用户要求改变角色图（如「全景图」「镜头拉远」「换图」「改风格」等）时，你只能更新该角色的提示词/描述等配置。界面上的头像不会自动刷新为新图；你必须在回复末尾明确告知用户：请到角色页点击「选中出图」为该角色重新生成肖像图后即可看到新图。",
+      );
     }
     if (context.focus.sceneName) {
       focusInstructions.push(`  → 目标场景: ${context.focus.sceneName} (ID: ${context.focus.sceneId})`);
     }
     if (context.focus.shotId) {
       focusInstructions.push(`  → 目标分镜: ${context.focus.shotId}`);
+      focusInstructions.push(
+        "  → 分镜重新生成说明：当用户要求「重新生成这个分镜」「重新出图」等时，你应更新该分镜的 prompt 等配置，并将该分镜的 image_status 设为 pending_regenerate。界面上的分镜图不会自动刷新；你必须在回复中明确告知用户：请到分镜图页点击「选中出图」为该分镜重新生成图片后即可看到新图。",
+      );
     }
     focusInstructions.push("严禁操作其他未聚焦的对象。如有歧义，优先使用聚焦对象。");
     lines.push(focusInstructions.join("\n"));
@@ -192,6 +198,10 @@ export function resolveReference(
         }
         return `[分镜未找到: ${ref.id}]`;
       }
+      case "audio":
+        return `[音频文件]\n名称: ${ref.label}\n路径: ${ref.id}\n（项目内生成的配音/音频资源，可用于剪辑或检查）`;
+      case "video":
+        return `[视频文件]\n名称: ${ref.label}\n路径: ${ref.id}\n（项目内生成的视频片段，可用于剪辑或检查）`;
       case "skill":
         return `[技能: ${ref.label}]`;
       default:

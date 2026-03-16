@@ -38,6 +38,36 @@ const TAB_ACTIONS: Record<string, TabAction[]> = {
       action: "run",
       variant: "primary",
     },
+    {
+      label: "全部场景出图",
+      stepId: "scenes-to-images",
+      action: "run",
+    },
+    {
+      label: "选中场景出图",
+      stepId: "scenes-to-images",
+      action: "regenerate-one",
+      requiresSelection: true,
+    },
+  ],
+  props: [
+    {
+      label: "提取道具",
+      stepId: "extract-props",
+      action: "run",
+      variant: "primary",
+    },
+    {
+      label: "全部道具出图",
+      stepId: "extract-props",
+      action: "generate-images",
+    },
+    {
+      label: "选中道具出图",
+      stepId: "extract-props",
+      action: "regenerate-one",
+      requiresSelection: true,
+    },
   ],
   shots: [
     {
@@ -46,6 +76,18 @@ const TAB_ACTIONS: Record<string, TabAction[]> = {
       action: "run",
       variant: "primary",
     },
+    {
+      label: "全部出图",
+      stepId: "shots-to-images",
+      action: "run-all",
+    },
+    {
+      label: "选中出图",
+      stepId: "shots-to-images",
+      action: "run-selected",
+      requiresSelection: true,
+    },
+    { label: "重试失败", stepId: "shots-to-images", action: "retry-failed" },
   ],
   images: [
     {
@@ -78,6 +120,21 @@ const TAB_ACTIONS: Record<string, TabAction[]> = {
     { label: "重试失败", stepId: "shots-to-audio", action: "retry-failed" },
   ],
   video: [
+    {
+      label: "全部生视频",
+      stepId: "shots-to-ai-video",
+      action: "run-all",
+      variant: "primary",
+    },
+    {
+      label: "选中生视频",
+      stepId: "shots-to-ai-video",
+      action: "run-selected",
+      requiresSelection: true,
+    },
+    { label: "重试失败", stepId: "shots-to-ai-video", action: "retry-failed" },
+  ],
+  editor: [
     {
       label: "合成视频",
       stepId: "compose-video",

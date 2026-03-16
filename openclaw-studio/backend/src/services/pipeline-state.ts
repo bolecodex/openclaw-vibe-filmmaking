@@ -124,6 +124,49 @@ function detectSceneStatus(projectDir: string): Omit<StepState, "id" | "name" | 
   };
 }
 
+function detectScenesToImagesStatus(projectDir: string): Omit<StepState, "id" | "name" | "canRun" | "review"> {
+  const indexFile = findFile(projectDir, "_场景索引.yaml");
+  if (!indexFile) return { status: "pending" };
+
+  const data = safeReadYaml(indexFile);
+  const scenes = (data?.scenes as Record<string, unknown>[]) ?? [];
+  const total = scenes.length;
+  if (total === 0) return { status: "pending" };
+
+  const withImage = scenes.filter(
+    (s) => s.image_path || s.image_url || s.image_status === "completed",
+  ).length;
+
+  return {
+    status: withImage === 0 ? "pending" : withImage === total ? "completed" : "partial",
+    completedCount: withImage,
+    totalCount: total,
+    lastUpdated: statSync(indexFile).mtime.toISOString(),
+  };
+}
+
+function detectPropsStatus(projectDir: string): Omit<StepState, "id" | "name" | "canRun" | "review"> {
+  const propFile = findFile(projectDir, "_道具资产.yaml");
+  if (!propFile) return { status: "pending" };
+
+  const data = safeReadYaml(propFile);
+  const props = (data?.props ?? data?.items) as Record<string, unknown>[] | undefined;
+  const list = Array.isArray(props) ? props : [];
+  const total = list.length;
+  if (total === 0) return { status: "pending" };
+
+  const withImage = list.filter(
+    (p) => p.image_path || p.image_url || p.image_status === "completed",
+  ).length;
+
+  return {
+    status: withImage === 0 ? "pending" : withImage === total ? "completed" : "partial",
+    completedCount: withImage,
+    totalCount: total,
+    lastUpdated: statSync(propFile).mtime.toISOString(),
+  };
+}
+
 function detectStoryboardStatus(projectDir: string): Omit<StepState, "id" | "name" | "canRun" | "review"> {
   const shotsDir = join(projectDir, "shots");
   const manifestPath = join(shotsDir, "_manifest.yaml");
@@ -277,8 +320,11 @@ export function detectPipelineState(projectName: string): PipelineState {
   const aiVideoStep = detectAiVideoStatus(projectDir);
   const composeStep = detectComposeVideoStatus(projectDir);
 
+  const scenesToImagesStep = detectScenesToImagesStatus(projectDir);
   const hasScenes = sceneStep.status === "completed";
   const hasStoryboard = storyboardStep.status === "completed";
+
+  const propsStep = detectPropsStatus(projectDir);
 
   const steps: StepState[] = [
     {
@@ -289,11 +335,25 @@ export function detectPipelineState(projectName: string): PipelineState {
       ...charStep,
     },
     {
+      id: "extract-props",
+      name: "提取道具",
+      canRun: true,
+      review: reviews["extract-props"] ?? DEFAULT_REVIEW,
+      ...propsStep,
+    },
+    {
       id: "script-to-scenes",
       name: "剧本转场景",
       canRun: true,
       review: reviews["script-to-scenes"] ?? DEFAULT_REVIEW,
       ...sceneStep,
+    },
+    {
+      id: "scenes-to-images",
+      name: "场景出图",
+      canRun: hasScenes,
+      review: reviews["scenes-to-images"] ?? DEFAULT_REVIEW,
+      ...scenesToImagesStep,
     },
     {
       id: "scenes-to-storyboard",

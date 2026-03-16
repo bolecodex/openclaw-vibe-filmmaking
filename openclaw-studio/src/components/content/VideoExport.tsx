@@ -32,13 +32,6 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  if (m > 0) return `${m}分${s}秒`;
-  return `${s}秒`;
-}
-
 export function VideoExport({ project }: { project: string }) {
   const { data: shotsData } = useShots(project);
   const render = useRenderTask();
@@ -86,137 +79,137 @@ export function VideoExport({ project }: { project: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4">
-      <div className="flex items-center gap-2">
-        <Clapperboard size={14} className="text-accent" />
-        <span className="text-xs font-medium text-gray-300">导出设置</span>
-      </div>
+    <div className="flex h-full min-h-0 flex-col gap-3 p-3 lg:flex-row lg:gap-4 lg:p-4">
+      {/* 左侧：场景 + 参数 */}
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Clapperboard size={14} className="text-accent shrink-0" />
+          <span className="text-xs font-medium text-gray-300">导出设置</span>
+        </div>
 
-      {/* Scene selection */}
-      <div className="rounded-lg border border-white/5 bg-surface-2 p-4">
-        <label className="mb-2 block text-[11px] font-medium text-gray-400">场景选择</label>
-        <select
-          value={selectedScene}
-          onChange={(e) => setSelectedScene(e.target.value)}
-          disabled={render.isRendering}
-          className="w-full rounded bg-surface-3 px-3 py-1.5 text-xs text-white outline-none"
-        >
-          <option value="all">全部场景 ({readyScenes.length} 个可用)</option>
-          {scenes.map((sc) => (
-            <option key={sc.id} value={sc.id} disabled={!sc.ready}>
-              {sc.id} - {sc.name} ({sc.images}/{sc.total} 图, {sc.audio}/{sc.total} 音)
-              {!sc.ready ? " [资源不足]" : ""}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Config grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-lg border border-white/5 bg-surface-2 p-4">
-          <label className="mb-2 block text-[11px] font-medium text-gray-400">分辨率</label>
+        <div className="rounded-lg border border-white/5 bg-surface-2 p-3">
+          <label className="mb-1 block text-[11px] font-medium text-gray-400">场景选择</label>
           <select
-            value={resolution}
-            onChange={(e) => setResolution(Number(e.target.value))}
+            value={selectedScene}
+            onChange={(e) => setSelectedScene(e.target.value)}
             disabled={render.isRendering}
-            className="w-full rounded bg-surface-3 px-3 py-1.5 text-xs text-white outline-none"
+            className="w-full rounded bg-surface-3 px-2.5 py-1 text-xs text-white outline-none"
           >
-            {RESOLUTIONS.map((r, i) => (
-              <option key={i} value={i}>{r.label}</option>
+            <option value="all">全部场景 ({readyScenes.length} 个可用)</option>
+            {scenes.map((sc) => (
+              <option key={sc.id} value={sc.id} disabled={!sc.ready}>
+                {sc.id} - {sc.name} ({sc.images}/{sc.total} 图, {sc.audio}/{sc.total} 音)
+                {!sc.ready ? " [资源不足]" : ""}
+              </option>
             ))}
           </select>
         </div>
 
-        <div className="rounded-lg border border-white/5 bg-surface-2 p-4">
-          <label className="mb-2 block text-[11px] font-medium text-gray-400">帧率</label>
-          <div className="flex gap-2">
-            {FPS_OPTIONS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setFps(f)}
-                disabled={render.isRendering}
-                className={`flex-1 rounded px-2 py-1.5 text-xs transition-colors ${
-                  fps === f
-                    ? "bg-accent/20 text-accent"
-                    : "bg-surface-3 text-gray-400 hover:text-white"
-                }`}
-              >
-                {f}
-              </button>
-            ))}
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-white/5 bg-surface-2 p-2.5">
+            <label className="mb-1 block text-[10px] font-medium text-gray-400">分辨率</label>
+            <select
+              value={resolution}
+              onChange={(e) => setResolution(Number(e.target.value))}
+              disabled={render.isRendering}
+              className="w-full rounded bg-surface-3 px-2 py-1 text-[11px] text-white outline-none"
+            >
+              {RESOLUTIONS.map((r, i) => (
+                <option key={i} value={i}>{r.label}</option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        <div className="rounded-lg border border-white/5 bg-surface-2 p-4">
-          <label className="mb-2 block text-[11px] font-medium text-gray-400">转场效果</label>
-          <select
-            value={transition}
-            onChange={(e) => setTransition(e.target.value as typeof transition)}
-            disabled={render.isRendering}
-            className="w-full rounded bg-surface-3 px-3 py-1.5 text-xs text-white outline-none"
-          >
-            {TRANSITIONS.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
-          {transition !== "none" && (
-            <div className="mt-2 flex items-center gap-2">
-              <span className="text-[10px] text-gray-500">时长</span>
-              <input
-                type="range"
-                min={5}
-                max={30}
-                value={transitionFrames}
-                onChange={(e) => setTransitionFrames(Number(e.target.value))}
-                disabled={render.isRendering}
-                className="flex-1"
-              />
-              <span className="text-[10px] tabular-nums text-gray-400">
-                {(transitionFrames / fps).toFixed(1)}s
-              </span>
+          <div className="rounded-lg border border-white/5 bg-surface-2 p-2.5">
+            <label className="mb-1 block text-[10px] font-medium text-gray-400">帧率</label>
+            <div className="flex gap-1">
+              {FPS_OPTIONS.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFps(f)}
+                  disabled={render.isRendering}
+                  className={`flex-1 rounded px-1.5 py-1 text-[11px] transition-colors ${
+                    fps === f
+                      ? "bg-accent/20 text-accent"
+                      : "bg-surface-3 text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
 
-        <div className="rounded-lg border border-white/5 bg-surface-2 p-4">
-          <label className="mb-2 block text-[11px] font-medium text-gray-400">效果</label>
-          <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-2 text-xs text-gray-300">
-              <input
-                type="checkbox"
-                checked={kenburns}
-                onChange={(e) => setKenburns(e.target.checked)}
-                disabled={render.isRendering}
-                className="rounded"
-              />
-              Ken Burns 缩放动画
-            </label>
-            <label className="flex items-center gap-2 text-xs text-gray-300">
-              <input
-                type="checkbox"
-                checked={subtitles}
-                onChange={(e) => setSubtitles(e.target.checked)}
-                disabled={render.isRendering}
-                className="rounded"
-              />
-              显示字幕
-            </label>
+          <div className="rounded-lg border border-white/5 bg-surface-2 p-2.5">
+            <label className="mb-1 block text-[10px] font-medium text-gray-400">转场</label>
+            <select
+              value={transition}
+              onChange={(e) => setTransition(e.target.value as typeof transition)}
+              disabled={render.isRendering}
+              className="w-full rounded bg-surface-3 px-2 py-1 text-[11px] text-white outline-none"
+            >
+              {TRANSITIONS.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+            {transition !== "none" && (
+              <div className="mt-1 flex items-center gap-1">
+                <input
+                  type="range"
+                  min={5}
+                  max={30}
+                  value={transitionFrames}
+                  onChange={(e) => setTransitionFrames(Number(e.target.value))}
+                  disabled={render.isRendering}
+                  className="flex-1 min-w-0"
+                />
+                <span className="text-[10px] tabular-nums text-gray-400 shrink-0">
+                  {(transitionFrames / fps).toFixed(1)}s
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-white/5 bg-surface-2 p-2.5">
+            <label className="mb-1 block text-[10px] font-medium text-gray-400">效果</label>
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+              <label className="flex items-center gap-1.5 text-[11px] text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={kenburns}
+                  onChange={(e) => setKenburns(e.target.checked)}
+                  disabled={render.isRendering}
+                  className="rounded"
+                />
+                Ken Burns
+              </label>
+              <label className="flex items-center gap-1.5 text-[11px] text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={subtitles}
+                  onChange={(e) => setSubtitles(e.target.checked)}
+                  disabled={render.isRendering}
+                  className="rounded"
+                />
+                字幕
+              </label>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Render button / progress */}
-      <div className="rounded-lg border border-white/5 bg-surface-2 p-4">
+      {/* 右侧：执行 / 进度 / 结果 */}
+      <div className="w-full shrink-0 rounded-lg border border-white/5 bg-surface-2 p-3 lg:w-64">
         {render.phase === "done" ? (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-emerald-400">
-              <CheckCircle2 size={16} />
-              <span className="text-sm font-medium">渲染完成</span>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-1.5 text-emerald-400">
+              <CheckCircle2 size={14} className="shrink-0" />
+              <span className="text-xs font-medium">渲染完成</span>
             </div>
             {render.outputPath && (
-              <div className="flex items-center gap-3 rounded bg-surface-3 p-3">
-                <div className="flex-1">
-                  <p className="text-xs text-gray-300">
+              <div className="flex items-center gap-2 rounded bg-surface-3 p-2">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[11px] text-gray-300">
                     {render.outputPath.split("/").pop()}
                   </p>
                   {render.outputSize && (
@@ -228,43 +221,43 @@ export function VideoExport({ project }: { project: string }) {
                 <a
                   href={`/api/workspace/file-raw?path=${encodeURIComponent(render.outputPath)}`}
                   download
-                  className="flex items-center gap-1 rounded bg-accent/20 px-3 py-1.5 text-xs text-accent hover:bg-accent/30"
+                  className="flex shrink-0 items-center gap-1 rounded bg-accent/20 px-2 py-1 text-[11px] text-accent hover:bg-accent/30"
                 >
-                  <Download size={12} />
+                  <Download size={11} />
                   下载
                 </a>
               </div>
             )}
             <button
               onClick={render.reset}
-              className="flex items-center justify-center gap-1.5 rounded bg-white/5 py-2 text-xs text-gray-400 hover:bg-white/10 hover:text-white"
+              className="flex items-center justify-center gap-1 rounded bg-white/5 py-1.5 text-[11px] text-gray-400 hover:bg-white/10 hover:text-white"
             >
-              <RotateCcw size={12} />
+              <RotateCcw size={11} />
               重新配置
             </button>
           </div>
         ) : render.error ? (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 text-red-400">
-              <AlertCircle size={16} />
-              <span className="text-sm font-medium">渲染失败</span>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-1.5 text-red-400">
+              <AlertCircle size={14} className="shrink-0" />
+              <span className="text-xs font-medium">渲染失败</span>
             </div>
-            <p className="text-xs text-gray-400">{render.error}</p>
+            <p className="line-clamp-2 text-[11px] text-gray-400">{render.error}</p>
             <button
               onClick={render.reset}
-              className="flex items-center justify-center gap-1.5 rounded bg-white/5 py-2 text-xs text-gray-400 hover:bg-white/10 hover:text-white"
+              className="flex items-center justify-center gap-1 rounded bg-white/5 py-1.5 text-[11px] text-gray-400 hover:bg-white/10 hover:text-white"
             >
-              <RotateCcw size={12} />
+              <RotateCcw size={11} />
               重试
             </button>
           </div>
         ) : render.isRendering ? (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Loader2 size={14} className="animate-spin text-accent" />
-              <span className="text-xs text-gray-300">{render.message}</span>
+              <Loader2 size={12} className="animate-spin text-accent shrink-0" />
+              <span className="text-[11px] text-gray-300 truncate">{render.message}</span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-3">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
               <div
                 className="h-full rounded-full bg-accent transition-all duration-300"
                 style={{ width: `${render.progress}%` }}
@@ -283,7 +276,7 @@ export function VideoExport({ project }: { project: string }) {
           <button
             onClick={handleRender}
             disabled={readyScenes.length === 0}
-            className="flex w-full items-center justify-center gap-2 rounded bg-accent py-2.5 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-40"
+            className="flex w-full items-center justify-center gap-2 rounded bg-accent py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-40"
           >
             <Clapperboard size={14} />
             开始渲染

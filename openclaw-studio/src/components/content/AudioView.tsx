@@ -1,5 +1,6 @@
 import { useShots } from "../../hooks/use-api";
 import { resolveAudioSrc } from "../../lib/asset-resolver";
+import { motion } from "framer-motion";
 import { Music, Play, Pause, Volume2, Inbox } from "lucide-react";
 import { useState, useRef, useCallback, useEffect } from "react";
 import type { ShotInfo } from "../../lib/types";
@@ -187,11 +188,16 @@ export function AudioView({ project }: { project: string }) {
 
   if (entries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-12 text-gray-600">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        className="flex flex-col items-center justify-center gap-2 py-12 text-gray-600"
+      >
         <Inbox size={32} strokeWidth={1} />
         <p className="text-sm">暂无音频</p>
         <p className="text-xs">在 Agent 中输入「生成配音」开始</p>
-      </div>
+      </motion.div>
     );
   }
 
@@ -212,13 +218,19 @@ export function AudioView({ project }: { project: string }) {
       </div>
 
       <div className="flex flex-col gap-2 p-4">
-        {entries.map((entry) => (
-          <AudioItem
+        {entries.map((entry, index) => (
+          <motion.div
             key={entry.shotId}
-            entry={entry}
-            isPlaying={playingId === entry.shotId}
-            onToggle={() => toggle(entry.shotId)}
-          />
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.02, duration: 0.2 }}
+          >
+            <AudioItem
+              entry={entry}
+              isPlaying={playingId === entry.shotId}
+              onToggle={() => toggle(entry.shotId)}
+            />
+          </motion.div>
         ))}
       </div>
     </div>

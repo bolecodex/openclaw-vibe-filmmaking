@@ -68,6 +68,10 @@ export const api = {
       }>(
         `/workspace/shots?project=${encodeURIComponent(project)}${sceneId ? `&sceneId=${encodeURIComponent(sceneId)}` : ""}`,
       ),
+    props: (project: string) =>
+      request<import("./types").PropItem[]>(
+        `/workspace/props?project=${encodeURIComponent(project)}`,
+      ),
     media: (project: string, type: "images" | "audio" | "video") =>
       request<import("./types").MediaFile[]>(
         `/workspace/media?project=${encodeURIComponent(project)}&type=${type}`,
@@ -94,6 +98,11 @@ export const api = {
     updateShot: (project: string, file: string, id: string, data: Record<string, unknown>) =>
       request<{ ok: boolean }>(
         `/workspace/shot?project=${encodeURIComponent(project)}&file=${encodeURIComponent(file)}&id=${encodeURIComponent(id)}`,
+        { method: "PUT", body: JSON.stringify(data) },
+      ),
+    updateProp: (project: string, id: string, data: Record<string, unknown>) =>
+      request<{ ok: boolean }>(
+        `/workspace/prop?project=${encodeURIComponent(project)}&id=${encodeURIComponent(id)}`,
         { method: "PUT", body: JSON.stringify(data) },
       ),
     sourceFiles: (project: string) =>

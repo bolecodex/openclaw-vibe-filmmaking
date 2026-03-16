@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FileText, Users, Film, Clapperboard, Zap } from "lucide-react";
+import { FileText, Users, Film, Clapperboard, Zap, AudioLines, Video } from "lucide-react";
 import type { MentionItem, MentionType } from "../../lib/types";
 
 const CATEGORIES: { type: MentionType | null; label: string; icon: typeof FileText }[] = [
@@ -8,6 +8,8 @@ const CATEGORIES: { type: MentionType | null; label: string; icon: typeof FileTe
   { type: "character", label: "角色", icon: Users },
   { type: "scene", label: "场景", icon: Film },
   { type: "shot", label: "分镜", icon: Clapperboard },
+  { type: "audio", label: "音频", icon: AudioLines },
+  { type: "video", label: "视频", icon: Video },
   { type: "skill", label: "技能", icon: Zap },
 ];
 
@@ -17,6 +19,18 @@ const TYPE_COLORS: Record<MentionType, string> = {
   scene: "text-emerald-400",
   shot: "text-blue-400",
   skill: "text-purple-400",
+  audio: "text-cyan-400",
+  video: "text-orange-400",
+};
+
+const EMPTY_HINTS: Record<MentionType, string> = {
+  file: "当前项目暂无文件",
+  character: "暂无角色，请先在流水线执行「提取角色」",
+  scene: "暂无场景，请先执行「切分场景」",
+  shot: "暂无分镜，请先执行「生成分镜」",
+  audio: "暂无音频，完成「分镜配音」后会出现",
+  video: "暂无视频，完成「分镜生视频」或「选中生视频」后会出现",
+  skill: "暂无可用技能",
 };
 
 interface MentionDropdownProps {
@@ -123,8 +137,14 @@ export function MentionDropdown({
 
       <div ref={listRef} className="max-h-48 overflow-auto py-1">
         {filtered.length === 0 ? (
-          <div className="px-3 py-4 text-center text-xs text-gray-600">
-            无匹配结果
+          <div className="px-3 py-4 text-center text-xs text-gray-500">
+            {query ? (
+              "无匹配结果"
+            ) : activeCategory && EMPTY_HINTS[activeCategory] ? (
+              EMPTY_HINTS[activeCategory]
+            ) : (
+              "无匹配结果"
+            )}
           </div>
         ) : (
           filtered.slice(0, 50).map((item, idx) => (

@@ -1,5 +1,6 @@
 import { useStyle } from "../../hooks/use-api";
 import { api } from "../../lib/api-client";
+import { motion } from "framer-motion";
 import { Palette, Save, Pencil, X } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useSWRConfig } from "swr";
@@ -24,7 +25,7 @@ function EditableTextarea({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={3}
-          className="w-full rounded-md border border-white/10 bg-surface-3 px-3 py-2 text-xs text-gray-200 outline-none transition-colors focus:border-accent/50"
+          className="w-full rounded-md border border-white/10 bg-surface-3 px-3 py-2 text-xs text-gray-200 outline-none ring-1 ring-accent/20 transition-colors focus:border-accent/50"
         />
       ) : (
         <div className="rounded-md border border-white/5 bg-surface-3/50 px-3 py-2 text-xs leading-relaxed text-gray-300">
@@ -79,19 +80,29 @@ export function StylePanel({ project }: { project: string }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-gray-600">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2 }}
+        className="flex items-center justify-center py-12 text-gray-600"
+      >
         <span className="text-sm">加载中...</span>
-      </div>
+      </motion.div>
     );
   }
 
   if (!style) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-12 text-gray-600">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col items-center justify-center gap-2 py-12 text-gray-600"
+      >
         <Palette size={32} strokeWidth={1} />
         <p className="text-sm">暂无风格配置</p>
         <p className="text-xs">项目中缺少 style.yaml</p>
-      </div>
+      </motion.div>
     );
   }
 
@@ -99,7 +110,12 @@ export function StylePanel({ project }: { project: string }) {
   const video = style.video ?? {};
 
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col gap-6 p-4"
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Palette size={16} className="text-accent" />
@@ -156,7 +172,12 @@ export function StylePanel({ project }: { project: string }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-white/5 bg-surface-2">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.05 }}
+          className="rounded-lg border border-white/5 bg-surface-2"
+        >
           <div className="border-b border-white/5 px-3 py-2">
             <h3 className="text-[11px] font-medium text-gray-400">图片尺寸</h3>
           </div>
@@ -171,9 +192,14 @@ export function StylePanel({ project }: { project: string }) {
           ) : (
             <div className="px-3 py-3 text-xs text-gray-600">未配置</div>
           )}
-        </div>
+        </motion.div>
 
-        <div className="rounded-lg border border-white/5 bg-surface-2">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="rounded-lg border border-white/5 bg-surface-2"
+        >
           <div className="border-b border-white/5 px-3 py-2">
             <h3 className="text-[11px] font-medium text-gray-400">视频参数</h3>
           </div>
@@ -184,8 +210,8 @@ export function StylePanel({ project }: { project: string }) {
           {!video.aspect_ratio && !video.resolution && (
             <div className="px-3 py-3 text-xs text-gray-600">未配置</div>
           )}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

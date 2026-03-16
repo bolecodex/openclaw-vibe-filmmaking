@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import {
   useStyle,
   useCharacters,
@@ -32,9 +33,10 @@ interface StatCardProps {
   sub?: string;
   status?: "ready" | "partial" | "empty";
   tab: string;
+  index?: number;
 }
 
-function StatCard({ icon, label, value, sub, status, tab }: StatCardProps) {
+function StatCard({ icon, label, value, sub, status, tab, index }: StatCardProps) {
   const setTab = useProjectStore((s) => s.setCurrentTab);
   const statusColor =
     status === "ready"
@@ -44,7 +46,11 @@ function StatCard({ icon, label, value, sub, status, tab }: StatCardProps) {
         : "text-gray-600";
 
   return (
-    <button
+    <motion.button
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      transition={{ delay: (index ?? 0) * 0.05, duration: 0.25 }}
       onClick={() => setTab(tab)}
       className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-surface-2 p-4 text-left transition-all duration-200 hover:border-white/10 hover:shadow-md hover:shadow-black/20"
     >
@@ -67,7 +73,7 @@ function StatCard({ icon, label, value, sub, status, tab }: StatCardProps) {
           ) : null}
         </div>
       )}
-    </button>
+    </motion.button>
   );
 }
 
@@ -165,6 +171,7 @@ export function Dashboard({ project }: { project: string }) {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard
+          index={0}
           icon={<Palette size={16} />}
           label="风格"
           value={style ? "已配置" : "未配置"}
@@ -172,6 +179,7 @@ export function Dashboard({ project }: { project: string }) {
           tab="style"
         />
         <StatCard
+          index={1}
           icon={<Users size={16} />}
           label="角色"
           value={totalChars}
@@ -190,6 +198,7 @@ export function Dashboard({ project }: { project: string }) {
           tab="characters"
         />
         <StatCard
+          index={2}
           icon={<Film size={16} />}
           label="场景"
           value={scenes.length}
@@ -197,6 +206,7 @@ export function Dashboard({ project }: { project: string }) {
           tab="scenes"
         />
         <StatCard
+          index={3}
           icon={<Clapperboard size={16} />}
           label="分镜"
           value={totalShots}
@@ -205,6 +215,7 @@ export function Dashboard({ project }: { project: string }) {
           tab="shots"
         />
         <StatCard
+          index={4}
           icon={<ImageIcon size={16} />}
           label="图片"
           value={shotsWithImage.length}
@@ -223,6 +234,7 @@ export function Dashboard({ project }: { project: string }) {
           tab="images"
         />
         <StatCard
+          index={5}
           icon={<Music size={16} />}
           label="音频"
           value={shotsWithAudio.length}
@@ -241,6 +253,7 @@ export function Dashboard({ project }: { project: string }) {
           tab="audio"
         />
         <StatCard
+          index={6}
           icon={<Video size={16} />}
           label="视频"
           value={videoFiles?.length ?? 0}
@@ -250,7 +263,12 @@ export function Dashboard({ project }: { project: string }) {
       </div>
 
       {totalShots > 0 && (
-        <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.25 }}
+          className="rounded-xl border border-white/[0.06] bg-surface-2 p-5"
+        >
           <h3 className="mb-4 text-xs font-medium text-gray-400">
             制作进度
           </h3>
@@ -266,10 +284,15 @@ export function Dashboard({ project }: { project: string }) {
               label="配音完成"
             />
           </div>
-        </div>
+        </motion.div>
       )}
 
-      <div className="rounded-xl border border-white/[0.06] bg-surface-2 p-5">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.25 }}
+        className="rounded-xl border border-white/[0.06] bg-surface-2 p-5"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xs font-medium text-gray-400">资产同步</h3>
@@ -295,7 +318,7 @@ export function Dashboard({ project }: { project: string }) {
             {syncResult}
           </p>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

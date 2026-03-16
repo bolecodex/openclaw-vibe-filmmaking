@@ -13,6 +13,7 @@ const PANEL_TO_SWR_KEYS: Record<string, (project: string) => string[]> = {
   style: (p) => [`style-${p}`],
   characters: (p) => [`chars-${p}`],
   scenes: (p) => [`scenes-${p}`],
+  props: (p) => [`props-${p}`],
   shots: (p) => [`shots-${p}`],
   images: (p) => [`media-${p}-images`],
   audio: (p) => [`media-${p}-audio`],

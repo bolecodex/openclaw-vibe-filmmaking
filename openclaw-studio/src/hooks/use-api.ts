@@ -42,6 +42,12 @@ export function useShots(project: string | null, sceneId?: string) {
   return useSWR(key, () => api.workspace.shots(project!, sceneId));
 }
 
+export function useProps(project: string | null) {
+  return useSWR(project ? `props-${project}` : null, () =>
+    api.workspace.props(project!),
+  );
+}
+
 export function useMedia(
   project: string | null,
   type: "images" | "audio" | "video",

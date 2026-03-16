@@ -52,13 +52,13 @@ describe("stripMentionTokens", () => {
 });
 
 describe("insertMention", () => {
-  it("inserts mention at @ position", () => {
+  it("inserts mention at @ position (material name only)", () => {
     const result = insertMention("hello @", 7, {
       type: "character",
       id: "c1",
       label: "沈鸢",
     });
-    expect(result.text).toContain("@[沈鸢](character:c1)");
+    expect(result.text).toContain("@沈鸢 ");
     expect(result.text.startsWith("hello ")).toBe(true);
     expect(result.cursorPos).toBeGreaterThan(7);
   });
@@ -69,7 +69,7 @@ describe("insertMention", () => {
       id: "c1",
       label: "沈鸢",
     });
-    expect(result.text).toContain("@[沈鸢](character:c1)");
+    expect(result.text).toContain("@沈鸢 ");
     expect(result.text).toContain("about it");
   });
 
@@ -102,8 +102,8 @@ describe("getQueryAfterAt", () => {
     expect(result.active).toBe(false);
   });
 
-  it("inactive after completed mention token", () => {
-    const result = getQueryAfterAt("@[沈鸢](character:c1) other", 26);
+  it("inactive after completed mention (space after @name)", () => {
+    const result = getQueryAfterAt("hello @沈鸢 other", 14);
     expect(result.active).toBe(false);
   });
 });

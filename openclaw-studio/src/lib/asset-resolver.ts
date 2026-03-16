@@ -17,12 +17,14 @@ function normalizePath(p: string): string {
  * @param imageUrl - remote URL (may expire)
  * @param imagePath - local relative path (may start with "./" for project-relative)
  * @param pathPrefix - prefix relative to project, e.g. "shots/" for shot images
+ * @param cacheBuster - optional string to append as query param so browser refetches when content may have changed (e.g. after character config update / re-gen)
  */
 export function resolveImageSrc(
   project: string,
   imageUrl?: string,
   imagePath?: string,
   pathPrefix = "",
+  cacheBuster?: string,
 ): string | undefined {
   if (imagePath) {
     const clean = normalizePath(imagePath);
@@ -31,9 +33,21 @@ export function resolveImageSrc(
     const full = alreadyPrefixed || !pathPrefix
       ? `${project}/${clean}`
       : `${project}/${pathPrefix}${clean}`;
-    return fileRawUrl(normalizePath(full));
+    const url = fileRawUrl(normalizePath(full));
+    if (cacheBuster) {
+      const sep = url.includes("?") ? "&" : "?";
+      return `${url}${sep}v=${encodeURIComponent(cacheBuster)}`;
+    }
+    return url;
   }
-  return imageUrl || undefined;
+  if (imageUrl) {
+    if (cacheBuster) {
+      const sep = imageUrl.includes("?") ? "&" : "?";
+      return `${imageUrl}${sep}v=${encodeURIComponent(cacheBuster)}`;
+    }
+    return imageUrl;
+  }
+  return undefined;
 }
 
 /**

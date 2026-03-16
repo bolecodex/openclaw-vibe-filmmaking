@@ -39,7 +39,22 @@ export function buildStepPrompt(stepId: string, ctx: StepPromptContext): string 
 
   const skillContent = readSkillContent(step.skill);
   const styleContent = readStyleYaml(ctx.projectDir);
-  const actionLabel = ACTION_LABELS[ctx.action] ?? ctx.action;
+  const actionLabel =
+    stepId === "scenes-to-images"
+      ? ctx.action === "run"
+        ? "全部场景出图"
+        : ctx.action === "regenerate-one"
+          ? "重新生成选中场景的场景图"
+          : ACTION_LABELS[ctx.action] ?? ctx.action
+      : stepId === "extract-props"
+        ? ctx.action === "run"
+          ? "提取全部道具"
+          : ctx.action === "generate-images"
+            ? "全部道具出图"
+            : ctx.action === "regenerate-one"
+              ? "重新生成选中道具的配图"
+              : ACTION_LABELS[ctx.action] ?? ctx.action
+        : ACTION_LABELS[ctx.action] ?? ctx.action;
 
   const sections: string[] = [
     `[自动化任务 - 请严格按照以下指令执行，不要询问确认]`,

@@ -62,7 +62,7 @@ export function ChatPanel() {
   }, [currentProject, mutate]);
 
   const { messages, isStreaming, sendMessage, stopStreaming, clearMessages } =
-    useChat(refreshAll);
+    useChat(refreshAll, refreshAll);
 
   useEffect(() => {
     if (!projectPath) return;
@@ -314,7 +314,7 @@ export function ChatPanel() {
   const mentionResults = showMentions ? searchMentions(mentionQuery) : [];
 
   return (
-    <div className="flex w-96 flex-col border-l border-white/[0.06] bg-surface-1">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       {/* Header */}
       <div className="relative flex items-center justify-between border-b border-white/[0.06] px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2">

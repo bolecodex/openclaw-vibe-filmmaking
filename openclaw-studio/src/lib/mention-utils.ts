@@ -30,7 +30,7 @@ export function insertMention(
   if (atIdx === -1) return { text, cursorPos };
 
   const prefix = before.slice(0, atIdx);
-  const token = `@[${mention.label}](${mention.type}:${mention.id}) `;
+  const token = `@${mention.label} `;
   return {
     text: prefix + token + after,
     cursorPos: prefix.length + token.length,

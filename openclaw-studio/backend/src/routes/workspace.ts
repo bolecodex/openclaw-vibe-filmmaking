@@ -18,6 +18,8 @@ import {
   updateCharacter,
   updateScene,
   updateShot,
+  getProps,
+  updateProp,
   uploadNovelFiles,
   getSourceFiles,
   listDirs,
@@ -196,6 +198,16 @@ router.get("/shots", (req, res) => {
   }
 });
 
+router.get("/props", (req, res) => {
+  try {
+    const project = req.query.project as string;
+    if (!project) return res.status(400).json({ error: "project required" });
+    res.json(getProps(project));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
 router.get("/media", (req, res) => {
   try {
     const project = req.query.project as string;
@@ -331,6 +343,20 @@ router.put("/shot", (req, res) => {
       return res.status(400).json({ error: "project, file, and id required" });
     const ok = updateShot(project, file, id, req.body);
     if (!ok) return res.status(404).json({ error: "shot not found" });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+router.put("/prop", (req, res) => {
+  try {
+    const project = req.query.project as string;
+    const id = req.query.id as string;
+    if (!project || !id)
+      return res.status(400).json({ error: "project and id required" });
+    const ok = updateProp(project, id, req.body);
+    if (!ok) return res.status(404).json({ error: "prop not found" });
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: (err as Error).message });

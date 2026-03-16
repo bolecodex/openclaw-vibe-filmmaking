@@ -1,7 +1,9 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { useCharacters, useScenes, useShots } from "../../hooks/use-api";
 import { useProjectStore } from "../../stores/project-store";
 import { api } from "../../lib/api-client";
 import { resolveImageSrc } from "../../lib/asset-resolver";
+import { cn } from "../../lib/utils";
 import { FallbackImage } from "../ui/FallbackImage";
 import {
   Users,
@@ -100,7 +102,14 @@ function CharacterDetail({
     }
   };
 
-  const src = resolveImageSrc(project, char.image_url, char.image_path);
+  const charCacheBuster = `${(char.prompt?.length ?? 0)}-${(char.description?.length ?? 0)}-${char.image_path ?? ""}`;
+  const src = resolveImageSrc(
+    project,
+    char.image_url,
+    char.image_path,
+    "",
+    charCacheBuster,
+  );
 
   return (
     <div className="flex flex-col gap-4 border-t border-white/5 bg-gradient-to-b from-surface-1/80 to-surface-1/40 p-5">
@@ -326,7 +335,12 @@ export function CharacterView({ project }: { project: string }) {
 
   if (!characters || characters.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-600">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.25 }}
+        className="flex flex-col items-center justify-center gap-3 py-16 text-gray-600"
+      >
         <div className="rounded-2xl bg-surface-2 p-4">
           <Users size={32} strokeWidth={1} />
         </div>
@@ -334,7 +348,7 @@ export function CharacterView({ project }: { project: string }) {
         <p className="text-xs text-gray-600">
           在 Agent 中输入「提取角色」开始
         </p>
-      </div>
+      </motion.div>
     );
   }
 
@@ -378,22 +392,30 @@ export function CharacterView({ project }: { project: string }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {filtered.map((char) => {
+        {filtered.map((char, index) => {
           const isSelected = expandedId === char.id;
+          const charCacheBuster = `${(char.prompt?.length ?? 0)}-${(char.description?.length ?? 0)}-${char.image_path ?? ""}`;
           const src = resolveImageSrc(
             project,
             char.image_url,
             char.image_path,
+            "",
+            charCacheBuster,
           );
 
           return (
-            <div
+            <motion.div
               key={char.id}
-              className={`group flex flex-col overflow-hidden rounded-xl border transition-all duration-200 ${
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03, duration: 0.25 }}
+              whileHover={{ scale: 1.02 }}
+              className={cn(
+                "group flex flex-col overflow-hidden rounded-xl border transition-all duration-200",
                 isSelected
                   ? "border-accent/30 bg-surface-2 shadow-lg shadow-accent/5"
                   : "border-white/5 bg-surface-2 hover:border-white/10 hover:shadow-md hover:shadow-black/20"
-              }`}
+              )}
             >
               <button
                 onClick={() =>
@@ -456,28 +478,36 @@ export function CharacterView({ project }: { project: string }) {
                   </div>
                 </div>
               </button>
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
-      {expandedId && (
-        <div className="mx-4 mb-4 overflow-hidden rounded-xl border border-white/5 bg-surface-2">
-          {(() => {
-            const char = characters.find((c) => c.id === expandedId);
-            if (!char) return null;
-            return (
-              <CharacterDetail
-                char={char}
-                project={project}
-                relatedScenes={getRelatedScenes(char.name)}
-                relatedShotCount={getRelatedShotCount(char.id)}
-                onNavigateScene={() => setCurrentTab("scenes")}
-              />
-            );
-          })()}
-        </div>
-      )}
+      <AnimatePresence>
+        {expandedId && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="mx-4 mb-4 overflow-hidden rounded-xl border border-white/5 bg-surface-2"
+          >
+            {(() => {
+              const char = characters.find((c) => c.id === expandedId);
+              if (!char) return null;
+              return (
+                <CharacterDetail
+                  char={char}
+                  project={project}
+                  relatedScenes={getRelatedScenes(char.name)}
+                  relatedShotCount={getRelatedShotCount(char.id)}
+                  onNavigateScene={() => setCurrentTab("scenes")}
+                />
+              );
+            })()}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
