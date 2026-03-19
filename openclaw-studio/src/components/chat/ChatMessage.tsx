@@ -1,13 +1,33 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { Wrench } from "lucide-react";
+import { Wrench, AtSign } from "lucide-react";
 import type {
   ChatMessage as ChatMessageType,
+  MentionRef,
   ToolCallInfo,
   UiActionRecord,
 } from "../../lib/types";
 
-const MENTION_TYPE_COLORS: Record<string, string> = {
+/** @ 引用块：深色底 + 左侧色条，与正文灰字强对比 */
+const MENTION_PILL_BY_TYPE: Record<string, string> = {
+  file: "border-l-slate-400 bg-zinc-950/85 text-slate-100 border border-white/[0.12] border-l-[3px]",
+  character:
+    "border-l-amber-400 bg-zinc-950/85 text-amber-50 border border-white/[0.12] border-l-[3px]",
+  scene:
+    "border-l-emerald-400 bg-zinc-950/85 text-emerald-50 border border-white/[0.12] border-l-[3px]",
+  shot: "border-l-sky-400 bg-zinc-950/85 text-sky-50 border border-white/[0.12] border-l-[3px]",
+  skill:
+    "border-l-violet-400 bg-zinc-950/85 text-violet-100 border border-white/[0.12] border-l-[3px]",
+  audio: "border-l-cyan-400 bg-zinc-950/85 text-cyan-50 border border-white/[0.12] border-l-[3px]",
+  video:
+    "border-l-orange-400 bg-zinc-950/85 text-orange-50 border border-white/[0.12] border-l-[3px]",
+};
+
+const MENTION_DEFAULT_PILL =
+  "border-l-violet-400 bg-zinc-950/90 text-violet-100 border border-violet-500/25 border-l-[3px] shadow-md shadow-black/30";
+
+/** 底部引用标签（与正文 @ 高亮区分） */
+const MENTION_CHIP_COLORS: Record<string, string> = {
   file: "bg-gray-500/20 text-gray-300",
   character: "bg-amber-500/20 text-amber-300",
   scene: "bg-emerald-500/20 text-emerald-300",
@@ -17,30 +37,54 @@ const MENTION_TYPE_COLORS: Record<string, string> = {
   video: "bg-orange-500/20 text-orange-300",
 };
 
-function highlightMentions(text: string): (string | JSX.Element)[] {
+function highlightMentions(
+  text: string,
+  mentions?: MentionRef[],
+): (string | JSX.Element)[] | null {
+  if (!/@\S/.test(text)) return null;
+  const labelToType = new Map<string, string>();
+  for (const m of mentions ?? []) {
+    labelToType.set(m.label, m.type);
+  }
   const parts: (string | JSX.Element)[] = [];
   const re = /@(\S+)/g;
   let last = 0;
   let match;
+  let key = 0;
   while ((match = re.exec(text)) !== null) {
     if (match.index > last) {
-      parts.push(text.slice(last, match.index));
+      parts.push(
+        <span key={`b-${key++}`} className="text-gray-400/95">
+          {text.slice(last, match.index)}
+        </span>,
+      );
     }
     const label = match[1];
+    const t = labelToType.get(label);
+    const pill =
+      t && MENTION_PILL_BY_TYPE[t]
+        ? MENTION_PILL_BY_TYPE[t]
+        : MENTION_DEFAULT_PILL;
     parts.push(
       <span
-        key={match.index}
-        className="inline-block rounded bg-accent/20 px-1 py-0.5 text-accent"
+        key={`m-${key++}`}
+        className={`mx-1 inline-flex max-w-[min(100%,18rem)] items-center gap-0.5 rounded-md px-2 py-1 align-baseline text-[12px] font-semibold leading-tight shadow-sm ${pill}`}
+        title={`引用：@${label}`}
       >
-        @{label}
+        <AtSign size={11} strokeWidth={2.5} className="shrink-0 opacity-80" />
+        <span className="min-w-0 truncate">{label}</span>
       </span>,
     );
     last = match.index + match[0].length;
   }
   if (last < text.length) {
-    parts.push(text.slice(last));
+    parts.push(
+      <span key={`b-${key++}`} className="text-gray-400/95">
+        {text.slice(last)}
+      </span>,
+    );
   }
-  return parts;
+  return parts.length ? parts : null;
 }
 
 function ThinkingPanel({ thinking }: { thinking: string }) {
@@ -79,7 +123,7 @@ function ThinkingPanel({ thinking }: { thinking: string }) {
 function ToolCallItem({ tc }: { tc: ToolCallInfo }) {
   const isRunning = tc.status === "running";
   const hasDetails = tc.input || tc.output;
-  const [expanded, setExpanded] = useState(isRunning && hasDetails);
+  const [expanded, setExpanded] = useState(() => Boolean(isRunning && hasDetails));
   const outputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -130,7 +174,7 @@ function ToolCallItem({ tc }: { tc: ToolCallInfo }) {
     <div className={`rounded border ${statusColor} px-2.5 py-1.5 text-xs`}>
       <div
         className={`flex items-center gap-2 ${hasDetails ? "cursor-pointer" : ""}`}
-        onClick={() => hasDetails && setExpanded(!expanded)}
+        onClick={() => hasDetails && setExpanded((e) => !e)}
       >
         {statusIcon}
         <span className="font-medium text-gray-300">{tc.title}</span>
@@ -201,8 +245,8 @@ export function ChatMessage({ message }: { message: ChatMessageType }) {
   const isUser = message.role === "user";
 
   const contentWithMentions = useMemo(() => {
-    if (!isUser || !message.mentions?.length) return null;
-    return highlightMentions(message.content);
+    if (!isUser) return null;
+    return highlightMentions(message.content, message.mentions);
   }, [isUser, message.content, message.mentions]);
 
   const hasThinking = !isUser && message.thinking;
@@ -233,18 +277,20 @@ export function ChatMessage({ message }: { message: ChatMessageType }) {
                 ))}
               </div>
             )}
-            {contentWithMentions ? (
-              <p className="whitespace-pre-wrap">{contentWithMentions}</p>
-            ) : (
-              <p className="whitespace-pre-wrap">{message.content}</p>
-            )}
+            <p
+              className={`whitespace-pre-wrap leading-relaxed ${
+                contentWithMentions ? "text-left" : "text-gray-100"
+              }`}
+            >
+              {contentWithMentions ?? message.content}
+            </p>
             {message.mentions && message.mentions.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {message.mentions.map((m, i) => (
                   <span
                     key={i}
                     className={`rounded px-1.5 py-0.5 text-[10px] ${
-                      MENTION_TYPE_COLORS[m.type] ?? "bg-white/10 text-gray-400"
+                      MENTION_CHIP_COLORS[m.type] ?? "bg-white/10 text-gray-400"
                     }`}
                   >
                     {m.label}

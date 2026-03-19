@@ -1,5 +1,6 @@
 ---
 name: novel-scenes-to-images
+displayName: 场景环境配图
 version: 1.0.0
 description: 为每个场景生成一张场景图。读取场景索引与 style.yaml，根据场景的 location、mood、time_period 等生成画面，写入 assets/scenes/ 并更新场景索引中的 image_path。当用户需要场景出图、生成场景图、为场景配图时使用此 skill。
 trigger: "场景出图|场景图|scenes to images|生成场景图"

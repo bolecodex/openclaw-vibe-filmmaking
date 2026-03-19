@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   GitBranch,
   Play,
@@ -105,6 +105,48 @@ function StepNode({
   );
 }
 
+function LongNovelManifestBlock({ project }: { project: string }) {
+  const [info, setInfo] = useState<{
+    total_chunks: number;
+    analyzed: number;
+    final_script?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/pipeline/${encodeURIComponent(project)}/long-novel-manifest`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((m) => {
+        if (cancelled || !m?.chunks) return;
+        const analyzed = (m.chunks as { phases?: { analyzed?: boolean } }[]).filter(
+          (c) => c.phases?.analyzed,
+        ).length;
+        setInfo({
+          total_chunks: m.total_chunks ?? m.chunks.length,
+          analyzed,
+          final_script: m.final_script,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [project]);
+
+  if (!info) return null;
+  return (
+    <div className="rounded border border-violet-500/20 bg-violet-500/5 px-3 py-2 text-[10px] text-gray-400">
+      <span className="font-medium text-violet-300">长篇进度</span>
+      <span className="ml-2">
+        已分析块 {info.analyzed}/{info.total_chunks}
+      </span>
+      {info.final_script && (
+        <span className="ml-2 block truncate text-gray-500">终稿: {info.final_script}</span>
+      )}
+    </div>
+  );
+}
+
 function StepDetailPanel({
   step,
   def,
@@ -127,6 +169,8 @@ function StepDetailPanel({
         </span>
       </div>
 
+      {step.id === "long-novel-to-script" && <LongNovelManifestBlock project={project} />}
+
       {def.params.length > 0 && (
         <div className="flex flex-col gap-2">
           <span className="text-[10px] font-medium uppercase tracking-wider text-gray-500">参数</span>
@@ -143,6 +187,15 @@ function StepDetailPanel({
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
+              )}
+              {p.type === "text" && (
+                <input
+                  type="text"
+                  value={String(params[p.key] ?? p.default ?? "")}
+                  onChange={(e) => setStepParam(step.id, p.key, e.target.value)}
+                  placeholder={p.label}
+                  className="min-w-0 flex-1 rounded border border-white/10 bg-surface-3 px-2 py-1 font-mono text-[10px] text-white"
+                />
               )}
               {p.type === "number" && (
                 <input

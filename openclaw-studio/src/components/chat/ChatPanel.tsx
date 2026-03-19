@@ -1,5 +1,18 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Square, Trash2, X, ImageIcon, AtSign, Plus, List } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import {
+  Send,
+  Square,
+  Trash2,
+  X,
+  ImageIcon,
+  AtSign,
+  Plus,
+  List,
+  FolderOpen,
+  LayoutGrid,
+  Crosshair,
+} from "lucide-react";
 import { useSWRConfig } from "swr";
 import { useChat } from "../../hooks/use-chat";
 import { useProjectStore } from "../../stores/project-store";
@@ -19,6 +32,44 @@ import { getQueryAfterAt, insertMention, parseMentions, stripMentionTokens } fro
 import type { ImageAttachment, MentionRef, MentionItem } from "../../lib/types";
 import { TAB_LABELS } from "../../lib/ui-registry";
 
+const INPUT_TA_CLASS =
+  "min-h-[5.5rem] w-full resize-none bg-transparent p-0 font-sans text-[13px] leading-[1.55] outline-none placeholder:text-[13px] placeholder:text-gray-500";
+
+function mentionHighlightNodes(text: string): ReactNode[] {
+  const re = /@(\S+)/g;
+  const out: ReactNode[] = [];
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let k = 0;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) {
+      out.push(
+        <span key={`t-${k++}`} className="text-gray-400">
+          {text.slice(last, m.index)}
+        </span>,
+      );
+    }
+    /* 必须与 textarea 同字宽：整段用 m[0]（含 @），不加左右 padding */
+    out.push(
+      <span
+        key={`m-${k++}`}
+        className="rounded-[2px] bg-violet-950/90 text-violet-100 [box-shadow:inset_0_0_0_1px_rgba(167,139,250,0.45)]"
+      >
+        {m[0]}
+      </span>,
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) {
+    out.push(
+      <span key={`t-${k++}`} className="text-gray-400">
+        {text.slice(last)}
+      </span>,
+    );
+  }
+  return out;
+}
+
 export function ChatPanel() {
   const [input, setInput] = useState("");
   const [images, setImages] = useState<ImageAttachment[]>([]);
@@ -30,6 +81,13 @@ export function ChatPanel() {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [inputScroll, setInputScroll] = useState({ top: 0, left: 0 });
+
+  const inputHasMention = /@\S/.test(input);
+  const inputHighlightNodes = useMemo(
+    () => (inputHasMention && input ? mentionHighlightNodes(input) : null),
+    [input, inputHasMention],
+  );
 
   const currentProject = useProjectStore((s) => s.currentProject);
   const { data: projects } = useProjects();
@@ -299,17 +357,40 @@ export function ChatPanel() {
     setImages((prev) => prev.filter((img) => img.id !== id));
   };
 
-  const contextBreadcrumb = agentContext
-    ? [
-        agentContext.project?.name,
-        TAB_LABELS[agentContext.view.currentTab],
-        agentContext.focus.characterName ||
+  const contextChips = agentContext
+    ? (() => {
+        const chips: { icon: typeof FolderOpen; label: string; sub: string; accent?: boolean }[] =
+          [];
+        if (agentContext.project?.name) {
+          chips.push({
+            icon: FolderOpen,
+            label: "项目",
+            sub: agentContext.project.name,
+          });
+        }
+        const tabLabel = TAB_LABELS[agentContext.view.currentTab] ?? agentContext.view.currentTab;
+        chips.push({
+          icon: LayoutGrid,
+          label: "视图",
+          sub: tabLabel,
+          accent: true,
+        });
+        const focus =
+          agentContext.focus.characterName ||
           agentContext.focus.sceneName ||
-          agentContext.focus.shotId,
-      ]
-        .filter(Boolean)
-        .join(" > ")
-    : null;
+          agentContext.focus.shotId ||
+          agentContext.focus.selectedFile;
+        if (focus) {
+          chips.push({
+            icon: Crosshair,
+            label: "选中",
+            sub: String(focus).split("/").pop() ?? String(focus),
+            accent: true,
+          });
+        }
+        return chips;
+      })()
+    : [];
 
   const mentionResults = showMentions ? searchMentions(mentionQuery) : [];
 
@@ -388,13 +469,53 @@ export function ChatPanel() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/[0.06] p-2.5">
-        {contextBreadcrumb && (
-          <div className="mb-2 flex items-center gap-1.5 px-1">
-            <AtSign size={10} className="shrink-0 text-accent/60" />
-            <span className="truncate text-[10px] text-gray-500">
-              上下文: {contextBreadcrumb}
-            </span>
+      <div className="border-t border-white/[0.06] px-3 pb-3 pt-3">
+        {contextChips.length > 0 && (
+          <div className="mb-3">
+            <div className="mb-2 flex items-center gap-1.5 px-0.5">
+              <AtSign size={12} className="shrink-0 text-violet-400/80" strokeWidth={2} />
+              <span className="text-[11px] font-medium tracking-wide text-gray-500">
+                上下文
+              </span>
+            </div>
+            <div
+              className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.12)_transparent] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/15"
+            >
+              {contextChips.map((c, i) => {
+                const Icon = c.icon;
+                return (
+                  <div
+                    key={i}
+                    className={`flex shrink-0 snap-start items-center gap-2.5 rounded-xl border px-3 py-2.5 ${
+                      c.accent
+                        ? "border-violet-500/25 bg-violet-600/20 shadow-inner shadow-violet-950/20"
+                        : "border-white/[0.07] bg-white/[0.04]"
+                    }`}
+                  >
+                    <Icon
+                      size={16}
+                      strokeWidth={1.75}
+                      className={
+                        c.accent ? "text-violet-300/90" : "text-gray-500"
+                      }
+                    />
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                        {c.label}
+                      </div>
+                      <div
+                        className={`max-w-[200px] truncate text-[13px] font-medium ${
+                          c.accent ? "text-gray-100" : "text-gray-400"
+                        }`}
+                        title={c.sub}
+                      >
+                        {c.sub}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -425,7 +546,7 @@ export function ChatPanel() {
         )}
 
         <div
-          className="relative flex items-end gap-1.5 rounded-xl bg-surface-2 px-3 py-2.5 ring-1 ring-white/[0.06] transition-all focus-within:ring-accent/30"
+          className="relative flex items-end gap-2 rounded-2xl bg-surface-2 px-3 py-3 ring-1 ring-white/[0.08] transition-all focus-within:ring-violet-500/35"
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
@@ -437,26 +558,63 @@ export function ChatPanel() {
             visible={showMentions}
           />
 
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={handleInputChange}
-            onPaste={handlePaste}
-            onKeyDown={(e) => {
-              if (showMentions) return;
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
+          <div className="relative min-h-[5.5rem] min-w-0 flex-1">
+            {inputHighlightNodes && (
+              <div
+                className="pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-sm"
+                aria-hidden
+              >
+                <div
+                  className={`${INPUT_TA_CLASS} whitespace-pre-wrap break-words text-left text-gray-400`}
+                  style={{
+                    transform: `translate(-${inputScroll.left}px, -${inputScroll.top}px)`,
+                    minHeight: "100%",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {inputHighlightNodes}
+                </div>
+              </div>
+            )}
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={handleInputChange}
+              onPaste={handlePaste}
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                setInputScroll({ top: el.scrollTop, left: el.scrollLeft });
+              }}
+              onKeyDown={(e) => {
+                if (showMentions) return;
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder={
+                currentProject
+                  ? "输入指令... 输入 @ 引用数据"
+                  : "输入指令..."
               }
-            }}
-            placeholder={
-              currentProject
-                ? "输入指令... 输入 @ 引用数据"
-                : "输入指令..."
-            }
-            rows={6}
-            className="flex-1 resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-gray-600"
-          />
+              rows={5}
+              spellCheck={false}
+              className={`relative z-10 ${INPUT_TA_CLASS} flex-1 ${
+                inputHighlightNodes
+                  ? "text-transparent caret-gray-200 selection:bg-violet-500/25 [caret-color:rgb(229,231,235)]"
+                  : "text-gray-300"
+              }`}
+              style={
+                inputHighlightNodes
+                  ? ({
+                      WebkitTextFillColor: "transparent",
+                      scrollbarGutter: "stable",
+                    } satisfies CSSProperties)
+                  : { scrollbarGutter: "stable" }
+              }
+            />
+          </div>
 
           <div className="flex shrink-0 items-center gap-0.5">
             <label className="cursor-pointer rounded-md p-1.5 text-gray-600 transition-colors hover:bg-white/5 hover:text-gray-400">

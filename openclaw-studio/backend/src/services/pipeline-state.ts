@@ -267,6 +267,72 @@ function detectAiVideoStatus(projectDir: string): Omit<StepState, "id" | "name" 
   };
 }
 
+function detectLongNovelStatus(projectDir: string): Omit<StepState, "id" | "name" | "canRun" | "review"> {
+  const manifestPath = join(projectDir, ".pipeline", "novel_chunks_manifest.json");
+  if (!existsSync(manifestPath)) {
+    return { status: "pending" };
+  }
+  try {
+    const m = JSON.parse(readFileSync(manifestPath, "utf-8")) as {
+      chunks?: Array<{ phases?: { analyzed?: boolean }; status?: string }>;
+      total_chunks?: number;
+      final_script?: string;
+    };
+    const chunks = m.chunks ?? [];
+    const total = m.total_chunks ?? chunks.length;
+    const analyzed = chunks.filter((c) => c.phases?.analyzed || c.status === "completed").length;
+    const finalName = m.final_script;
+    const finalPath = finalName ? join(projectDir, finalName) : null;
+    const hasFinal = finalPath && existsSync(finalPath);
+    if (hasFinal && analyzed >= total && total > 0) {
+      return {
+        status: "completed",
+        completedCount: total,
+        totalCount: total,
+        lastUpdated: statSync(finalPath!).mtime.toISOString(),
+      };
+    }
+    return {
+      status: analyzed > 0 ? "partial" : "pending",
+      completedCount: analyzed,
+      totalCount: total || 1,
+      lastUpdated: statSync(manifestPath).mtime.toISOString(),
+    };
+  } catch {
+    return { status: "pending" };
+  }
+}
+
+function detectAiEditStatus(projectDir: string): Omit<StepState, "id" | "name" | "canRun" | "review"> {
+  const edited = join(projectDir, "output", "edited");
+  if (!existsSync(edited)) return { status: "pending" };
+  const mp4s = readdirSync(edited).filter((f) => f.endsWith(".mp4"));
+  if (mp4s.length === 0) return { status: "pending" };
+  return {
+    status: "completed",
+    completedCount: mp4s.length,
+    totalCount: mp4s.length,
+    lastUpdated: latestMtime(edited),
+  };
+}
+
+function detectVideoQualityStatus(projectDir: string): Omit<StepState, "id" | "name" | "canRun" | "review"> {
+  const p = join(projectDir, ".pipeline", "video_quality.json");
+  if (!existsSync(p)) return { status: "pending" };
+  try {
+    const data = JSON.parse(readFileSync(p, "utf-8")) as { shots?: unknown[] };
+    const n = (data.shots as unknown[])?.length ?? 0;
+    return {
+      status: n > 0 ? "completed" : "partial",
+      completedCount: n,
+      totalCount: Math.max(n, 1),
+      lastUpdated: statSync(p).mtime.toISOString(),
+    };
+  } catch {
+    return { status: "pending" };
+  }
+}
+
 function detectComposeVideoStatus(projectDir: string): Omit<StepState, "id" | "name" | "canRun" | "review"> {
   const dirs = [
     join(projectDir, "output", "videos"),
@@ -319,6 +385,9 @@ export function detectPipelineState(projectName: string): PipelineState {
   const audioStep = detectAudioStatus(projectDir);
   const aiVideoStep = detectAiVideoStatus(projectDir);
   const composeStep = detectComposeVideoStatus(projectDir);
+  const longNovelStep = detectLongNovelStatus(projectDir);
+  const aiEditStep = detectAiEditStatus(projectDir);
+  const videoQualityStep = detectVideoQualityStatus(projectDir);
 
   const scenesToImagesStep = detectScenesToImagesStatus(projectDir);
   const hasScenes = sceneStep.status === "completed";
@@ -326,7 +395,16 @@ export function detectPipelineState(projectName: string): PipelineState {
 
   const propsStep = detectPropsStatus(projectDir);
 
+  const composeDone = composeStep.status === "completed";
+
   const steps: StepState[] = [
+    {
+      id: "long-novel-to-script",
+      name: "长篇小说→剧本",
+      canRun: true,
+      review: reviews["long-novel-to-script"] ?? DEFAULT_REVIEW,
+      ...longNovelStep,
+    },
     {
       id: "extract-characters",
       name: "提取角色",
@@ -390,9 +468,31 @@ export function detectPipelineState(projectName: string): PipelineState {
       review: reviews["compose-video"] ?? DEFAULT_REVIEW,
       ...composeStep,
     },
+    {
+      id: "ai-edit-video",
+      name: "AI辅助剪辑",
+      canRun: composeDone,
+      review: reviews["ai-edit-video"] ?? DEFAULT_REVIEW,
+      ...aiEditStep,
+    },
+    {
+      id: "video-quality-review",
+      name: "视频质量审核",
+      canRun: composeDone,
+      review: reviews["video-quality-review"] ?? DEFAULT_REVIEW,
+      ...videoQualityStep,
+    },
   ];
 
-  const completable = steps.filter((s) => s.id !== "shots-to-ai-video");
+  const completable = steps.filter(
+    (s) =>
+      ![
+        "shots-to-ai-video",
+        "long-novel-to-script",
+        "ai-edit-video",
+        "video-quality-review",
+      ].includes(s.id),
+  );
   const completed = completable.filter((s) => s.status === "completed").length;
   const overallProgress = completable.length > 0 ? Math.round((completed / completable.length) * 100) : 0;
 

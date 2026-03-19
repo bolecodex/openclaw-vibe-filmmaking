@@ -146,6 +146,10 @@ export const api = {
   skills: {
     list: () => request<import("./types").Skill[]>("/skills"),
     get: (name: string) => request<import("./types").Skill>(`/skills/${name}`),
+    listFiles: (name: string) =>
+      request<{ entries: Array<{ path: string; type: "file" | "dir" }>; skillRoot?: string }>(
+        `/skills/${encodeURIComponent(name)}/files`,
+      ),
     create: (data: { name: string; content: string }) =>
       request<import("./types").Skill>("/skills", {
         method: "POST",

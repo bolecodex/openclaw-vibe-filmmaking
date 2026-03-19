@@ -1,0 +1,17 @@
+# 长篇处理过程中持续更新；单行摘要控制在模型可引用范围内
+version: 1
+title: ""
+characters: []
+# - name: ""
+#   role: 主角|配角|反派
+#   traits: 不可变外貌/性格关键词
+locations: []
+# - name: ""
+#   note: ""
+timeline: []
+# - chapter_range: "chunk 1-5"
+#   summary: 一段话
+foreshadow_active: []
+# - id: f1
+#   hint: 伏笔描述
+#   status: open|resolved

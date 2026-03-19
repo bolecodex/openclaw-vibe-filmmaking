@@ -14,7 +14,7 @@ interface SkillsStore {
 export const useSkillsStore = create<SkillsStore>((set) => ({
   selectedSkill: null,
   searchQuery: "",
-  activeTab: "system",
+  activeTab: "all",
   setSelectedSkill: (name) => set({ selectedSkill: name }),
   setSearchQuery: (q) => set({ searchQuery: q }),
   setActiveTab: (tab) => set({ activeTab: tab }),

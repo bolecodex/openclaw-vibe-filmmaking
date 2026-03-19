@@ -20,9 +20,51 @@ import {
 } from "../services/gateway-client.js";
 import { syncAgentProjectDir } from "../services/workspace-config.js";
 import { getWorkspaceDir } from "../services/workspace.js";
-import { join } from "path";
+import { join, resolve } from "path";
+import { existsSync, readFileSync } from "fs";
 
 const router = Router();
+
+// --- Read project artifact (relative path under project dir) ---
+
+router.get("/:project/artifact", (req, res) => {
+  try {
+    const rel = String(req.query.path ?? "").trim();
+    if (!rel || rel.includes("..")) {
+      return res.status(400).json({ error: "Invalid path" });
+    }
+    const projectDir = resolve(join(getWorkspaceDir(), req.params.project));
+    const full = resolve(join(projectDir, rel));
+    if (!full.startsWith(projectDir) || full === projectDir) {
+      return res.status(400).json({ error: "Path outside project" });
+    }
+    if (!existsSync(full)) {
+      return res.status(404).json({ error: "Not found" });
+    }
+    const raw = readFileSync(full, "utf-8");
+    if (rel.endsWith(".json")) {
+      try {
+        return res.json(JSON.parse(raw));
+      } catch {
+        return res.type("application/json").send(raw);
+      }
+    }
+    return res.type("text/plain; charset=utf-8").send(raw);
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+router.get("/:project/long-novel-manifest", (req, res) => {
+  try {
+    const projectDir = join(getWorkspaceDir(), req.params.project);
+    const p = join(projectDir, ".pipeline", "novel_chunks_manifest.json");
+    if (!existsSync(p)) return res.status(404).json({ error: "No manifest" });
+    res.json(JSON.parse(readFileSync(p, "utf-8")));
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
 
 // --- Pipeline state ---
 

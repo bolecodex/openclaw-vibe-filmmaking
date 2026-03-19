@@ -1,28 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Trash2, Upload, RotateCcw, AlertTriangle } from "lucide-react";
+import useSWR from "swr";
 import { useSkill } from "../../hooks/use-skills";
 import { useSkillsStore } from "../../stores/skills-store";
 import { SkillConfig } from "./SkillConfig";
 import { SkillEditor } from "./SkillEditor";
+import { SkillDocumentation } from "./SkillDocumentation";
+import { SkillFilesPanel } from "./SkillFilesPanel";
 import { api } from "../../lib/api-client";
 
 interface SkillDetailProps {
   name: string;
 }
 
-const TABS = [
-  { id: "config" as const, label: "配置" },
-  { id: "editor" as const, label: "编辑器" },
-];
+type DetailTab = "readme" | "config" | "files" | "editor";
 
 export function SkillDetail({ name }: SkillDetailProps) {
   const { data: skill, mutate } = useSkill(name);
   const setSelectedSkill = useSkillsStore((s) => s.setSelectedSkill);
-  const [activeTab, setActiveTab] = useState<"config" | "editor">("config");
+  const [activeTab, setActiveTab] = useState<DetailTab>("readme");
   const [editorContent, setEditorContent] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [resetting, setResetting] = useState(false);
+
+  const { data: filesMeta } = useSWR(
+    name ? `skill-files-meta-${name}` : null,
+    async () => {
+      const r = await api.skills.listFiles(name);
+      return r.entries?.length ?? 0;
+    },
+    { revalidateOnFocus: false },
+  );
+
+  useEffect(() => {
+    setActiveTab("readme");
+    setEditorContent(null);
+  }, [name]);
 
   if (!skill) {
     return (
@@ -35,8 +49,23 @@ export function SkillDetail({ name }: SkillDetailProps) {
   const content = editorContent ?? skill.content;
   const isDirty = editorContent !== null && editorContent !== skill.content;
   const isBundled = skill.source === "bundled";
-  const canDelete = !isBundled;
+  const isProject = skill.source === "project";
+  const canDelete = !isBundled && !isProject;
   const canReset = isBundled && skill.overridden;
+  const canEdit = !isProject;
+
+  const tabs: Array<{ id: DetailTab; label: string }> = [
+    { id: "readme", label: "说明" },
+    { id: "config", label: "配置" },
+    {
+      id: "files",
+      label:
+        filesMeta != null && filesMeta > 0
+          ? `文件(${filesMeta})`
+          : "文件",
+    },
+  ];
+  if (canEdit) tabs.push({ id: "editor", label: "编辑器" });
 
   const handleSave = async () => {
     if (!isDirty) return;
@@ -112,8 +141,8 @@ export function SkillDetail({ name }: SkillDetailProps) {
           </div>
         )}
 
-        <div className="mt-3 flex gap-1">
-          {TABS.map((tab) => (
+        <div className="mt-3 flex flex-wrap gap-1">
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -130,19 +159,21 @@ export function SkillDetail({ name }: SkillDetailProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
-        {activeTab === "config" ? (
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4 py-4">
+        {activeTab === "readme" && (
+          <SkillDocumentation rawMarkdown={content} />
+        )}
+        {activeTab === "config" && (
           <SkillConfig skill={skill} onUpdated={() => mutate()} />
-        ) : (
-          <SkillEditor
-            content={content}
-            onChange={(v) => setEditorContent(v)}
-          />
+        )}
+        {activeTab === "files" && <SkillFilesPanel skillName={name} />}
+        {activeTab === "editor" && canEdit && (
+          <SkillEditor content={content} onChange={(v) => setEditorContent(v)} />
         )}
       </div>
 
-      <div className="shrink-0 flex gap-2 border-t border-white/5 p-4">
-        {activeTab === "editor" && isDirty && (
+      <div className="shrink-0 flex flex-wrap gap-2 border-t border-white/5 p-4">
+        {activeTab === "editor" && isDirty && canEdit && (
           <button
             type="button"
             onClick={handleSave}

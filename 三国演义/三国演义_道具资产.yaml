@@ -1,0 +1,344 @@
+name: 三国演义第一回道具资产
+version: 1.0
+total_count: 28
+categories:
+  - category: 武器类
+    items:
+      - id: weapon_001
+        name: 双股剑
+        description: 刘备专属兵器，由良匠用镔铁打造，分雌雄双剑，锋利无比
+        appearance: 剑身修长，剑鞘雕刻龙纹，剑柄缠金丝
+        material: 镔铁，纯铜，木材
+        weight: "各重7斤"
+        holder: 刘备
+        appearance_scene: 桃园结义后打造兵器
+        usage: 作战，防身
+        rarity: 珍贵
+        style_prompt: 汉代双股剑，做工精致，剑身锋利，剑鞘雕刻龙纹，金属质感，超高清细节
+
+      - id: weapon_002
+        name: 青龙偃月刀
+        alias: 冷艳锯
+        description: 关羽专属兵器，由良匠用镔铁打造，刀身刻青龙纹，重八十二斤
+        appearance: 刀身宽大，刻有青龙吞月图案，刀柄缠红绸，寒光闪闪
+        material: 镔铁，纯铜，丝绸
+        weight: "八十二斤"
+        holder: 关羽
+        appearance_scene: 桃园结义后打造兵器
+        usage: 作战
+        rarity: 极品
+        style_prompt: 青龙偃月刀，刀身刻青龙纹，寒光闪闪，金属质感强烈，超高清细节
+
+      - id: weapon_003
+        name: 丈八点钢矛
+        description: 张飞专属兵器，由良匠用镔铁打造，矛尖锋利，矛杆长一丈八尺
+        appearance: 矛头呈蛇形，锋利无比，矛杆为浑铁打造，乌黑发亮
+        material: 镔铁，精钢
+        weight: "六十斤"
+        holder: 张飞
+        appearance_scene: 桃园结义后打造兵器
+        usage: 作战
+        rarity: 珍贵
+        style_prompt: 丈八点钢矛，矛头锋利，矛杆乌黑发亮，金属质感，超高清细节
+
+      - id: weapon_004
+        name: 汉剑
+        description: 汉代武将通用佩剑，朱儁、卢植、皇甫嵩等将领使用
+        appearance: 剑身笔直，剑鞘为皮革包裹，剑柄装饰简单
+        material: 精钢，皮革，木材
+        weight: "3斤"
+        holder: 汉代武将
+        appearance_scene: 多处战场、军营场景
+        usage: 作战，防身，礼仪
+        rarity: 普通
+        style_prompt: 汉代青铜剑，做工古朴，剑身锋利，超高清细节
+
+      - id: weapon_005
+        name: 长矛
+        description: 士兵通用长兵器，黄巾军和汉军大量使用
+        appearance: 矛尖锋利，矛杆为木质，包铁皮
+        material: 精钢，木材，铁皮
+        weight: "5斤"
+        holder: 士兵
+        appearance_scene: 所有战场场景
+        usage: 作战
+        rarity: 普通
+        style_prompt: 古代长矛，做工简单，木质矛杆，金属矛头，超高清细节
+
+      - id: weapon_006
+        name: 环首刀
+        description: 汉代士兵通用短兵器，近身作战使用
+        appearance: 刀身直，刀柄有环首，便于握持
+        material: 精钢，木材
+        weight: "2斤"
+        holder: 士兵
+        appearance_scene: 所有战场场景
+        usage: 近身作战
+        rarity: 普通
+        style_prompt: 汉代环首刀，金属质感，做工古朴，超高清细节
+
+      - id: weapon_007
+        name: 弓箭
+        description: 远程作战兵器，军队大量配备
+        appearance: 弓身为牛角制作，弓弦为牛筋，箭为竹制铁箭头
+        material: 牛角，牛筋，竹子，精钢
+        weight: "1斤"
+        holder: 弓箭手
+        appearance_scene: 所有战场场景
+        usage: 远程射击
+        rarity: 普通
+        style_prompt: 古代弓箭，牛角弓身，竹制箭杆，超高清细节
+
+      - id: weapon_008
+        name: 五色棒
+        description: 曹操任洛阳北都尉时设立的执法刑具，共十余条，分五色
+        appearance: 十根木棒，分别涂为青、赤、黄、白、黑五色，悬挂于县衙四门
+        material: 硬木，油漆
+        weight: "每根5斤"
+        holder: 曹操
+        appearance_scene: 曹操早年任洛阳北都尉时
+        usage: 执法刑具，惩治犯禁者
+        rarity: 特殊
+        style_prompt: 五色木棒，悬挂于县衙门口，颜色分明，超高清细节
+
+  - category: 特殊仪式类
+    items:
+      - id: special_001
+        name: 太平要术
+        alias: 天书三卷
+        description: 南华老仙授予张角的奇书，记载呼风唤雨、符水治病等法术
+        appearance: 三卷竹简，用青色丝绳捆绑，封皮写"太平要术"四字
+        material: 竹简，丝绳
+        holder: 张角
+        appearance_scene: 张角入山采药遇南华老仙
+        usage: 学习法术，呼风唤雨，治病
+        rarity: 极品仙宝
+        style_prompt: 古朴天书三卷，竹简材质，青色丝绳捆绑，散发淡淡仙气，超高清细节
+
+      - id: special_002
+        name: 符水
+        description: 张角用符咒制作的水，号称能治病消灾
+        appearance: 装在陶碗中的清水，上面漂浮黄色符咒
+        material: 水，黄纸符咒
+        holder: 张角
+        appearance_scene: 张角为百姓治病
+        usage: 治病，蛊惑人心
+        rarity: 特殊
+        style_prompt: 陶碗装符水，黄色符咒漂浮在水面，超高清细节
+
+      - id: special_003
+        name: 黄巾
+        description: 黄巾军的标识，裹在额头上
+        appearance: 黄色布料，裁剪成长条状
+        material: 粗麻布
+        holder: 黄巾军士兵
+        appearance_scene: 所有黄巾军出场场景
+        usage: 身份标识
+        rarity: 普通
+        style_prompt: 黄色粗麻布头巾，裹在士兵额头上，超高清细节
+
+      - id: special_004
+        name: 黄旗
+        description: 黄巾军的军旗，上面写"苍天已死，黄天当立"
+        appearance: 黄色大旗，黑色字体，旗杆为木质
+        material: 粗麻布，木材，墨
+        holder: 黄巾军
+        appearance_scene: 黄巾军起义、作战场景
+        usage: 军旗，指挥军队
+        rarity: 特殊
+        style_prompt: 黄色黄巾军大旗，上面写黑色"苍天已死，黄天当立"字样，随风飘扬，超高清细节
+
+      - id: special_005
+        name: 乌牛白马祭礼
+        description: 桃园结义时用于祭祀天地的祭品
+        appearance: 宰杀好的黑色牛和白色马，摆放在香案上
+        material: 乌牛、白马
+        holder: 刘备、关羽、张飞
+        appearance_scene: 桃园结义
+        usage: 祭祀天地，盟誓
+        rarity: 特殊
+        style_prompt: 乌牛白马祭品，摆放在桃园香案上，祭祀场景，超高清细节
+
+      - id: special_006
+        name: 香案
+        description: 祭祀用的案几，摆放祭品和香烛
+        appearance: 木质案几，雕刻简单花纹，上面摆放香炉、烛台
+        material: 实木，漆器
+        holder: 祭祀使用
+        appearance_scene: 桃园结义、宫廷祭祀
+        usage: 祭祀摆放物品
+        rarity: 普通
+        style_prompt: 汉代木质香案，古朴造型，上面摆放香炉烛台，超高清细节
+
+      - id: special_007
+        name: 青铜香炉
+        description: 焚香用的青铜炉，祭祀和日常使用
+        appearance: 青铜材质，三足两耳，炉身雕刻纹饰，里面插着燃烧的香
+        material: 青铜
+        holder: 官宦人家、军营
+        appearance_scene: 桃园结义、宫廷、军营
+        usage: 焚香
+        rarity: 普通
+        style_prompt: 汉代青铜香炉，三足两耳，里面插着燃烧的香，烟雾缭绕，超高清细节
+
+  - category: 军事类
+    items:
+      - id: military_001
+        name: 玄甲
+        description: 汉代武将穿的铠甲，由铁片串联而成
+        appearance: 黑色铁片铠甲，保护全身，肩部有护肩，腰部束带
+        material: 铁片，皮革，丝绸
+        weight: "30斤"
+        holder: 武将
+        appearance_scene: 所有战场场景
+        usage: 防身
+        rarity: 珍贵
+        style_prompt: 汉代玄甲，铁片串联而成，金属质感，穿着在武将身上，超高清细节
+
+      - id: military_002
+        name: 皮甲
+        description: 普通士兵穿的铠甲，由皮革制作
+        appearance: 牛皮制作，表面刷漆，保护上身
+        material: 牛皮，漆
+        weight: "10斤"
+        holder: 普通士兵
+        appearance_scene: 所有战场场景
+        usage: 防身
+        rarity: 普通
+        style_prompt: 士兵皮甲，牛皮制作，表面刷漆，超高清细节
+
+      - id: military_003
+        name: 战马
+        description: 武将和骑兵乘坐的马匹
+        appearance: 高大健壮的战马，佩戴马鞍和缰绳，马身上有马甲
+        material: 活体战马，皮革马具
+        holder: 武将、骑兵
+        appearance_scene: 所有战场场景
+        usage: 骑乘作战
+        rarity: 珍贵
+        style_prompt: 汉代战马，高大健壮，佩戴马鞍缰绳，超高清细节
+
+      - id: military_004
+        name: 旌旗
+        description: 军队的旗帜，用于标识和指挥
+        appearance: 各色旗帜，上面写有将领姓氏和军队番号，随风飘扬
+        material: 丝绸、麻布，木质旗杆
+        holder: 军队
+        appearance_scene: 所有战场、军营场景
+        usage: 标识身份，指挥军队
+        rarity: 普通
+        style_prompt: 古代战旗，各色丝绸制作，上面写有文字，随风飘扬，超高清细节
+
+      - id: military_005
+        name: 军粮
+        description: 军队食用的粮食，主要是小米和麦子
+        appearance: 装在麻袋或陶罐里的粮食，堆放在军营中
+        material: 小米、麦子，麻袋、陶罐
+        holder: 军队
+        appearance_scene: 军营场景
+        usage: 军队食用
+        rarity: 普通
+        style_prompt: 堆放在军营中的粮袋，麻布材质，超高清细节
+
+      - id: military_006
+        name: 槛车
+        description: 押运犯人的囚车
+        appearance: 木质囚车，四周有木栏，犯人被关在里面，由士兵押送
+        material: 实木，铁链
+        holder: 官府
+        appearance_scene: 卢植被押解回京
+        usage: 押运犯人
+        rarity: 特殊
+        style_prompt: 古代木质槛车，四周有木栏，里面关着犯人，士兵押送，超高清细节
+
+  - category: 物资类
+    items:
+      - id: goods_001
+        name: 良马五十匹
+        description: 中山大商张世平、苏双赠送给刘备的战马
+        appearance: 五十匹高大健壮的良马，品种优良
+        material: 活体马匹
+        holder: 刘备
+        appearance_scene: 桃园结义后客商赠礼
+        usage: 军队骑乘
+        value: 价值千金
+        style_prompt: 五十匹高大健壮的良马，排列整齐，超高清细节
+
+      - id: goods_002
+        name: 金银五百两
+        description: 中山大商张世平、苏双赠送给刘备的金银
+        appearance: 金元宝和银锭，装在木箱子里
+        material: 黄金、白银
+        holder: 刘备
+        appearance_scene: 桃园结义后客商赠礼
+        usage: 招募军队，打造兵器
+        value: 五百两金银
+        style_prompt: 装在木箱子里的金元宝和银锭，闪闪发光，超高清细节
+
+      - id: goods_003
+        name: 镔铁一千斤
+        description: 中山大商张世平、苏双赠送给刘备的上等铁料
+        appearance: 一千斤黑色的镔铁块，堆放在一起
+        material: 镔铁（优质钢材）
+        holder: 刘备
+        appearance_scene: 桃园结义后客商赠礼
+        usage: 打造兵器铠甲
+        value: 珍贵
+        style_prompt: 堆放在一起的黑色镔铁块，金属质感，超高清细节
+
+      - id: goods_004
+        name: 白土
+        description: 黄巾军用来在门上写"甲子"二字的白色土块
+        appearance: 白色的土块，可用来在墙上写字
+        material: 白垩土
+        holder: 黄巾军信徒
+        appearance_scene: 黄巾军起义前准备
+        usage: 书写标识
+        rarity: 普通
+        style_prompt: 白色土块，在木门上写着"甲子"二字，超高清细节
+
+      - id: goods_005
+        name: 藜杖
+        description: 南华老仙手持的藜木拐杖
+        appearance: 用藜木制作的拐杖，头部弯曲，古朴自然
+        material: 藜木
+        holder: 南华老仙
+        appearance_scene: 张角遇南华老仙
+        usage: 辅助行走，仙家法器
+        rarity: 仙品
+        style_prompt: 南华老仙手持的藜木拐杖，古朴自然，散发仙气，超高清细节
+
+  - category: 生活及其他
+    items:
+      - id: life_001
+        name: 招军榜文
+        description: 幽州太守刘焉发布的招募义兵的告示
+        appearance: 贴在城门口的告示，写有招募义兵的内容，盖有官印
+        material: 宣纸，墨，官印
+        holder: 官府
+        appearance_scene: 刘备在涿县城门口看榜
+        usage: 招募士兵
+        rarity: 普通
+        style_prompt: 贴在城门口的招军榜文，宣纸材质，上面有毛笔字和官印，超高清细节
+
+      - id: life_002
+        name: 酒
+        description: 古代饮用的米酒，装在陶碗或酒坛里
+        appearance: 浑浊的米酒，装在粗陶碗或酒坛里
+        material: 大米发酵，粗陶容器
+        holder: 所有人
+        appearance_scene: 酒店饮酒、桃园结义、庆功宴等
+        usage: 饮用
+        rarity: 普通
+        style_prompt: 粗陶碗装的米酒，酒水浑浊，超高清细节
+
+      - id: life_003
+        name: 织席贩屦工具
+        description: 刘备早年编织草席和草鞋的工具
+        appearance: 竹篾、麻绳、草绳、剪刀等工具
+        material: 竹子、草、麻绳
+        holder: 刘备
+        appearance_scene: 刘备早年生活
+        usage: 编织草席草鞋谋生
+        rarity: 普通
+        style_prompt: 编织草席草鞋的工具，竹篾麻绳散落一旁，超高清细节

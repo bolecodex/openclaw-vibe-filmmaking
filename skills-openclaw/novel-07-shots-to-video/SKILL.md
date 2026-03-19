@@ -1,5 +1,6 @@
 ---
 name: novel-07-shots-to-video
+displayName: FFmpeg 分镜拼视频
 version: 1.0.0
 description: 将分镜头的图片和音频合并成视频。读取 shots/*.yaml 分镜文件，自动下载图片和音频，使用 FFmpeg 合成视频片段并拼接成完整视频。当用户想要生成视频、合并音视频、制作分镜视频、将分镜转为视频时使用此 skill。
 trigger: "FFmpeg合成|合成视频|merge video|生成视频|合并音视频"

@@ -18,3 +18,5 @@ dist/
 *.webp
 *.mov
 *.webm
+*.pyc
+docs/*

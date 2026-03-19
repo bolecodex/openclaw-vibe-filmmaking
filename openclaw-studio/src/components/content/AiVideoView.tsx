@@ -18,7 +18,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import type { ShotInfo, SceneShots } from "../../lib/types";
 
 const VIDEO_STATUS_MAP: Record<
@@ -299,6 +299,30 @@ export function AiVideoView({ project }: { project: string }) {
   );
 
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
+  const [qualityReport, setQualityReport] = useState<{
+    shots?: Array<{
+      shot_id: string;
+      scores?: { overall?: number };
+      regenerate_suggested?: boolean;
+      issues?: string[];
+    }>;
+    summary?: { avg_overall?: number };
+  } | null>(null);
+
+  useEffect(() => {
+    let c = false;
+    fetch(
+      `/api/pipeline/${encodeURIComponent(project)}/artifact?path=${encodeURIComponent(".pipeline/video_quality.json")}`,
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!c && j?.shots) setQualityReport(j);
+      })
+      .catch(() => {});
+    return () => {
+      c = true;
+    };
+  }, [project]);
 
   const scenes = data?.scenes ?? [];
 
@@ -381,6 +405,52 @@ export function AiVideoView({ project }: { project: string }) {
           )}
         </div>
       </div>
+
+      {qualityReport?.shots && qualityReport.shots.length > 0 && (
+        <div className="border-b border-white/5 px-4 py-3">
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-medium text-gray-300">
+            <AlertCircle size={12} className="text-amber-400" />
+            视频质量审核（video_quality.json）
+            {qualityReport.summary?.avg_overall != null && (
+              <span className="text-gray-500">
+                均分 {Number(qualityReport.summary.avg_overall).toFixed(1)}
+              </span>
+            )}
+          </div>
+          <div className="max-h-40 overflow-auto rounded border border-white/5">
+            <table className="w-full text-left text-[10px]">
+              <thead className="sticky top-0 bg-surface-2 text-gray-500">
+                <tr>
+                  <th className="px-2 py-1">镜头</th>
+                  <th className="px-2 py-1">分</th>
+                  <th className="px-2 py-1">建议重生成</th>
+                  <th className="px-2 py-1">问题</th>
+                </tr>
+              </thead>
+              <tbody>
+                {qualityReport.shots.slice(0, 50).map((row) => (
+                  <tr key={row.shot_id} className="border-t border-white/[0.04] text-gray-400">
+                    <td className="px-2 py-1 font-mono text-accent/80">{row.shot_id}</td>
+                    <td className="px-2 py-1">
+                      {row.scores?.overall != null ? row.scores.overall : "—"}
+                    </td>
+                    <td className="px-2 py-1">
+                      {row.regenerate_suggested ? (
+                        <span className="text-amber-400">是</span>
+                      ) : (
+                        "否"
+                      )}
+                    </td>
+                    <td className="max-w-[200px] truncate px-2 py-1" title={(row.issues ?? []).join("; ")}>
+                      {(row.issues ?? []).join("; ") || "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col divide-y divide-white/[0.03]">
         {scenes.map((scene) => {

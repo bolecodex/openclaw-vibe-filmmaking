@@ -473,7 +473,40 @@ openclaw skills list
 
 ---
 
-## 六、参考链接
+## 六、全部使用火山 API 配置
+
+当希望**图像、配音、视频**全链路统一走火山引擎时，按以下配置即可。
+
+### 6.1 环境变量（`.env` 或 `~/.openclaw/.env`）
+
+复制 `.env.example` 并填写：
+
+| 变量 | 说明 | 获取方式 |
+|------|------|----------|
+| `ARK_API_KEY` | 火山方舟 Ark API Key | 火山引擎控制台 → 方舟 → API Key |
+| `ARK_BASE_URL` | 方舟 API 地址 | 默认 `https://ark.cn-beijing.volces.com/api/v3` |
+| `SEEDREAM_ARK_MODEL` | 图像模型 | 默认 `doubao-seedream-4-5-251128` |
+| `SEEDANCE_MODEL` | 视频模型 | 默认 `doubao-seedance-2-0-pro-260215` |
+| `VOLC_APP_ID` | 豆包语音 APP ID | 火山引擎控制台 → 豆包语音 |
+| `VOLC_ACCESS_KEY` | 豆包语音 Access Token | 同上 |
+
+### 6.2 Studio 步骤默认
+
+在 OpenClaw Studio 的流水线中：
+
+- **分镜出图**：图片模型选「Seedream Ark 4.5 (火山)」或「Seedream Ark 5.0 Lite (火山)」。
+- **分镜配音**：TTS 模型选「火山豆包 HD」或「火山豆包 长文本」。
+- **分镜 AI 视频**：已为 Seedance 2.0（Ark），无需改。
+
+若需 **S 级精品剧**，在各步将「画质预设」或「音质预设」选为「S 级精品」；或在项目 `style.yaml` 中设置 `quality_tier: "s"`，各 skill 会采用更高分辨率、更长时长与电影感提示。
+
+### 6.3 兼容旧项目
+
+保留 XSkill/Minimax 选项：在 step-actions 中仍可选择「Seedream 4.5 (xskill)」「Minimax HD」等，便于未配置火山或历史项目继续使用。
+
+---
+
+## 七、参考链接
 
 - 官网: https://openclaw.ai
 - 文档: https://docs.openclaw.ai

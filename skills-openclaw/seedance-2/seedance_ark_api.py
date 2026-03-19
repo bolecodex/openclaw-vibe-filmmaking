@@ -2,13 +2,21 @@
 """
 Seedance 2.0 视频生成 - 火山方舟 Ark API CLI
 
-直接调用火山方舟官方 API 生成视频，支持文生视频和图生视频。
+直接调用火山方舟官方 API 生成视频。支持：文生视频、图生视频-首帧、图生视频-首尾帧、
+多模态参考（1~9 图 + 0~3 视频 + 0~3 音频 + 文本）、联网搜索（仅文生）。
 
 Usage:
-  python seedance_ark_api.py generate --prompt PROMPT [--image_url URL] [--duration SEC] [--resolution RES] [--aspect_ratio RATIO] [--model MODEL] [--no-audio]
+  # 文生视频
+  python seedance_ark_api.py generate --prompt PROMPT [--web_search]
+  # 图生视频-首帧
+  python seedance_ark_api.py generate --prompt PROMPT --image_url URL
+  # 图生视频-首尾帧
+  python seedance_ark_api.py generate --prompt PROMPT --first_frame URL --last_frame URL
+  # 多模态参考（延长/编辑/全能）
+  python seedance_ark_api.py generate --prompt PROMPT --reference_images URL [URL...] [--reference_videos URL...] [--reference_audios URL...]
   python seedance_ark_api.py get --task_id TASK_ID
-  python seedance_ark_api.py wait --task_id TASK_ID [--timeout SEC] [--interval SEC]
-  python seedance_ark_api.py run --prompt PROMPT [--image_url URL] [--duration SEC] [--resolution RES] [--output PATH]
+  python seedance_ark_api.py wait --task_id TASK_ID
+  python seedance_ark_api.py run --prompt PROMPT [--image_url URL] [--output PATH]
 """
 
 import argparse
@@ -72,41 +80,104 @@ def _request(method, path, body=None):
         sys.exit(1)
 
 
-def create_task(prompt, image_url=None, model=None, duration=None,
-                resolution=None, aspect_ratio=None, generate_audio=True, seed=None):
-    """Create a video generation task."""
-    content = []
+def build_content(prompt=None, image_url=None, first_frame_url=None, last_frame_url=None,
+                  reference_images=None, reference_videos=None, reference_audios=None):
+    """
+    Build content array for Seedance 2.0 API. Three mutually exclusive modes:
+    - first_frame + last_frame -> 图生视频-首尾帧
+    - any of reference_images / reference_videos / reference_audios -> 多模态参考 (need at least 1 image or 1 video)
+    - image_url only -> 图生视频-首帧
+    - else -> 文生视频 (text only)
+    """
+    reference_images = reference_images or []
+    reference_videos = reference_videos or []
+    reference_audios = reference_audios or []
 
+    # 1) 首尾帧：两张图，role first_frame / last_frame
+    if first_frame_url and last_frame_url:
+        content = [
+            {'type': 'image_url', 'image_url': {'url': first_frame_url}, 'role': 'first_frame'},
+            {'type': 'image_url', 'image_url': {'url': last_frame_url}, 'role': 'last_frame'},
+        ]
+        if prompt:
+            content.append({'type': 'text', 'text': prompt})
+        return content
+
+    # 2) 多模态参考：至少 1 图或 1 视频（不可仅音频）
+    if reference_images or reference_videos or reference_audios:
+        if not reference_images and not reference_videos:
+            raise ValueError('Multimodal reference requires at least 1 reference image or 1 reference video (cannot use audio only).')
+        content = []
+        if prompt:
+            content.append({'type': 'text', 'text': prompt})
+        for url in reference_images:
+            content.append({
+                'type': 'image_url',
+                'image_url': {'url': url},
+                'role': 'reference_image',
+            })
+        for url in reference_videos:
+            content.append({
+                'type': 'video_url',
+                'video_url': {'url': url},
+                'role': 'reference_video',
+            })
+        for url in reference_audios:
+            content.append({
+                'type': 'audio_url',
+                'audio_url': {'url': url},
+                'role': 'reference_audio',
+            })
+        return content
+
+    # 3) 图生视频-首帧：单图 + 文本
     if image_url:
-        content.append({
-            'type': 'image_url',
-            'image_url': {'url': image_url}
-        })
+        content = [
+            {'type': 'image_url', 'image_url': {'url': image_url}, 'role': 'first_frame'},
+            {'type': 'text', 'text': prompt or ''},
+        ]
+        return content
 
-    content.append({
-        'type': 'text',
-        'text': prompt
-    })
+    # 4) 文生视频
+    if not prompt:
+        raise ValueError('Prompt (text) is required for text-to-video or when no images/videos are provided.')
+    return [{'type': 'text', 'text': prompt}]
+
+
+def create_task(prompt=None, image_url=None, first_frame_url=None, last_frame_url=None,
+                reference_images=None, reference_videos=None, reference_audios=None,
+                model=None, duration=None, resolution=None, aspect_ratio=None,
+                generate_audio=True, seed=None, web_search=False, watermark=None):
+    """Create a video generation task. Uses top-level body params per Seedance 2.0 doc."""
+    content = build_content(
+        prompt=prompt,
+        image_url=image_url,
+        first_frame_url=first_frame_url,
+        last_frame_url=last_frame_url,
+        reference_images=reference_images,
+        reference_videos=reference_videos,
+        reference_audios=reference_audios,
+    )
 
     body = {
         'model': model or DEFAULT_MODEL,
         'content': content,
     }
-
-    extra = {}
+    # Top-level params (Seedance 2.0 doc)
     if duration is not None:
-        extra['duration'] = str(duration)
+        body['duration'] = int(duration)
     if resolution is not None:
-        extra['resolution'] = resolution
+        body['resolution'] = resolution
     if aspect_ratio is not None:
-        extra['aspect_ratio'] = aspect_ratio
-    if not generate_audio:
-        extra['generate_audio'] = False
+        body['ratio'] = aspect_ratio
+    body['generate_audio'] = bool(generate_audio)
+    if watermark is not None:
+        body['watermark'] = bool(watermark)
     if seed is not None:
-        extra['seed'] = int(seed)
-
-    if extra:
-        body['extra'] = extra
+        body['extra'] = body.get('extra') or {}
+        body['extra']['seed'] = int(seed)
+    if web_search:
+        body['tools'] = [{'type': 'web_search'}]
 
     result = _request('POST', '/contents/generations/tasks', body)
     return result
@@ -156,41 +227,54 @@ def download_video(url, output_path):
     print(f'Downloaded: {output_path} ({size_kb} KB)', file=sys.stderr)
 
 
+def _parse_list_arg(val):
+    if val is None:
+        return []
+    if isinstance(val, list):
+        return val
+    if isinstance(val, str):
+        return [u.strip() for u in val.split(',') if u.strip()]
+    return []
+
+
 def main():
     parser = argparse.ArgumentParser(description='Seedance 2.0 - Volcengine Ark API CLI')
     subparsers = parser.add_subparsers(dest='command')
 
-    # generate: create task and return task_id
-    p_gen = subparsers.add_parser('generate', help='Submit a video generation task')
-    p_gen.add_argument('--prompt', required=True, help='Video generation prompt')
-    p_gen.add_argument('--image_url', help='First-frame image URL (for image-to-video)')
-    p_gen.add_argument('--model', default=None, help=f'Model name (default: {DEFAULT_MODEL})')
-    p_gen.add_argument('--duration', type=int, default=5, help='Video duration in seconds (4-15)')
-    p_gen.add_argument('--resolution', default='720p', help='Resolution: 480p/720p/1080p')
-    p_gen.add_argument('--aspect_ratio', default='16:9', help='Aspect ratio: 16:9/9:16/1:1/4:3/3:4/21:9')
-    p_gen.add_argument('--no-audio', action='store_true', help='Disable audio generation')
-    p_gen.add_argument('--seed', type=int, help='Random seed (-1 for random)')
+    def add_common_gen_args(p):
+        p.add_argument('--prompt', default='', help='Video generation prompt (optional for multimodal if refs describe intent)')
+        p.add_argument('--image_url', help='First-frame image URL (single image-to-video)')
+        p.add_argument('--first_frame', help='First frame URL (for first+last frame mode)')
+        p.add_argument('--last_frame', help='Last frame URL (for first+last frame mode)')
+        p.add_argument('--reference_images', nargs='*', default=[], help='Reference image URLs (1-9, multimodal)')
+        p.add_argument('--reference_videos', nargs='*', default=[], help='Reference video URLs (0-3, multimodal/extend/edit)')
+        p.add_argument('--reference_audios', nargs='*', default=[], help='Reference audio URLs (0-3, multimodal)')
+        p.add_argument('--model', default=None, help=f'Model name (default: {DEFAULT_MODEL})')
+        p.add_argument('--duration', type=int, default=5, help='Video duration in seconds (4-15 or -1 for auto)')
+        p.add_argument('--resolution', default='720p', help='Resolution: 480p/720p')
+        p.add_argument('--aspect_ratio', default='16:9', help='Aspect ratio: 16:9/9:16/1:1/4:3/3:4/21:9/adaptive')
+        p.add_argument('--no-audio', action='store_true', help='Disable audio generation')
+        p.add_argument('--seed', type=int, help='Random seed')
+        p.add_argument('--web_search', action='store_true', help='Enable web search (text-to-video only)')
+        p.add_argument('--watermark', action='store_true', help='Add watermark')
 
-    # get: query task status
+    # generate
+    p_gen = subparsers.add_parser('generate', help='Submit a video generation task')
+    add_common_gen_args(p_gen)
+
+    # get
     p_get = subparsers.add_parser('get', help='Query task status')
     p_get.add_argument('--task_id', required=True, help='Task ID to query')
 
-    # wait: poll until task completes
+    # wait
     p_wait = subparsers.add_parser('wait', help='Wait for task completion')
     p_wait.add_argument('--task_id', required=True, help='Task ID to wait for')
     p_wait.add_argument('--timeout', type=int, default=600, help='Max wait seconds (default: 600)')
     p_wait.add_argument('--interval', type=int, default=10, help='Poll interval seconds (default: 10)')
 
-    # run: generate + wait + optional download (all-in-one)
+    # run
     p_run = subparsers.add_parser('run', help='Generate, wait, and optionally download')
-    p_run.add_argument('--prompt', required=True, help='Video generation prompt')
-    p_run.add_argument('--image_url', help='First-frame image URL')
-    p_run.add_argument('--model', default=None, help=f'Model name (default: {DEFAULT_MODEL})')
-    p_run.add_argument('--duration', type=int, default=5, help='Video duration (4-15s)')
-    p_run.add_argument('--resolution', default='720p', help='Resolution: 480p/720p/1080p')
-    p_run.add_argument('--aspect_ratio', default='16:9', help='Aspect ratio')
-    p_run.add_argument('--no-audio', action='store_true', help='Disable audio generation')
-    p_run.add_argument('--seed', type=int, help='Random seed')
+    add_common_gen_args(p_run)
     p_run.add_argument('--output', '-o', help='Download video to this path')
     p_run.add_argument('--timeout', type=int, default=600, help='Max wait seconds')
 
@@ -203,17 +287,37 @@ def main():
         print('Error: ARK_API_KEY not set. Add it to .env or export it.', file=sys.stderr)
         sys.exit(1)
 
+    def run_create(args):
+        ref_imgs = getattr(args, 'reference_images', []) or []
+        ref_vids = getattr(args, 'reference_videos', []) or []
+        ref_auds = getattr(args, 'reference_audios', []) or []
+        prompt = getattr(args, 'prompt', '') or None
+        if prompt is not None and prompt.strip() == '':
+            prompt = None
+        try:
+            return create_task(
+                prompt=prompt,
+                image_url=getattr(args, 'image_url', None),
+                first_frame_url=getattr(args, 'first_frame', None),
+                last_frame_url=getattr(args, 'last_frame', None),
+                reference_images=ref_imgs if ref_imgs else None,
+                reference_videos=ref_vids if ref_vids else None,
+                reference_audios=ref_auds if ref_auds else None,
+                model=getattr(args, 'model', None),
+                duration=getattr(args, 'duration', 5),
+                resolution=getattr(args, 'resolution', None),
+                aspect_ratio=getattr(args, 'aspect_ratio', None),
+                generate_audio=not getattr(args, 'no_audio', False),
+                seed=getattr(args, 'seed', None),
+                web_search=getattr(args, 'web_search', False),
+                watermark=getattr(args, 'watermark', None),
+            )
+        except ValueError as e:
+            print(json.dumps({'error': str(e)}, ensure_ascii=False), file=sys.stderr)
+            sys.exit(1)
+
     if args.command == 'generate':
-        result = create_task(
-            prompt=args.prompt,
-            image_url=args.image_url,
-            model=args.model,
-            duration=args.duration,
-            resolution=args.resolution,
-            aspect_ratio=args.aspect_ratio,
-            generate_audio=not args.no_audio,
-            seed=args.seed,
-        )
+        result = run_create(args)
         print(json.dumps(result, ensure_ascii=False, indent=2))
 
     elif args.command == 'get':
@@ -226,16 +330,7 @@ def main():
 
     elif args.command == 'run':
         print('Submitting task...', file=sys.stderr)
-        task_result = create_task(
-            prompt=args.prompt,
-            image_url=args.image_url,
-            model=args.model,
-            duration=args.duration,
-            resolution=args.resolution,
-            aspect_ratio=args.aspect_ratio,
-            generate_audio=not args.no_audio,
-            seed=args.seed,
-        )
+        task_result = run_create(args)
         task_id = task_result.get('id')
         if not task_id:
             print(json.dumps(task_result, ensure_ascii=False, indent=2))

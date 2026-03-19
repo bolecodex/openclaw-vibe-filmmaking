@@ -131,7 +131,7 @@ export interface Skill {
   displayName: string;
   description: string;
   version?: string;
-  source: "workspace" | "managed" | "bundled";
+  source: "workspace" | "managed" | "bundled" | "project";
   path: string;
   enabled: boolean;
   config: Record<string, string>;

@@ -19,10 +19,15 @@ const TABS: Array<{ id: SkillTab; label: string }> = [
 function filterSkills(skills: Skill[], tab: SkillTab, query: string): Skill[] {
   let filtered = skills;
   if (tab === "system") {
-    filtered = skills.filter((s) => s.source === "bundled");
+    filtered = skills.filter(
+      (s) => s.source === "bundled" || s.source === "project",
+    );
   } else if (tab === "installed") {
     filtered = skills.filter(
-      (s) => s.source === "workspace" || s.source === "managed",
+      (s) =>
+        s.source === "workspace" ||
+        s.source === "managed" ||
+        s.source === "project",
     );
   }
   if (query.trim()) {
@@ -56,7 +61,7 @@ function SystemSkillList({
       {pipelineSkills.length > 0 && (
         <div>
           <div className="mb-2 flex items-center gap-2 px-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-300">
               创作流水线
             </span>
             <span className="h-px flex-1 bg-indigo-500/20" />
@@ -87,7 +92,7 @@ function SystemSkillList({
       {otherSkills.length > 0 && (
         <div>
           <div className="mb-2 flex items-center gap-2 px-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
               其他系统技能
             </span>
             <span className="h-px flex-1 bg-white/5" />
@@ -111,14 +116,14 @@ function SystemSkillList({
       )}
 
       {pipelineSkills.length === 0 && otherSkills.length === 0 && (
-        <p className="py-8 text-center text-sm text-gray-500">暂无系统技能</p>
+        <p className="py-8 text-center text-xs text-gray-500">暂无系统技能</p>
       )}
     </div>
   );
 }
 
 export function SkillList() {
-  const { data: skills = [] } = useSkills();
+  const { data: skills = [], error, isLoading } = useSkills();
   const {
     selectedSkill,
     searchQuery,
@@ -136,13 +141,13 @@ export function SkillList() {
     <div className="flex h-full flex-col">
       <div className="shrink-0 space-y-3 border-b border-white/5 p-3">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             placeholder="搜索 Skill..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-surface-2 py-2 pl-9 pr-3 text-sm text-gray-100 placeholder-gray-500 focus:border-accent focus:outline-none"
+            className="w-full rounded-lg border border-white/10 bg-surface-2 py-2 pl-8 pr-2.5 text-xs text-gray-100 placeholder-gray-500 focus:border-accent focus:outline-none"
           />
         </div>
         <div className="flex gap-1 rounded-lg bg-surface-2 p-1">
@@ -151,7 +156,7 @@ export function SkillList() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 rounded-md px-2 py-1.5 text-sm font-medium transition-colors ${
+              className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
                 activeTab === tab.id
                   ? "bg-surface-3 text-gray-100"
                   : "text-gray-400 hover:text-gray-200"
@@ -164,6 +169,21 @@ export function SkillList() {
       </div>
 
       <div className="flex-1 overflow-auto p-3">
+        {error && (
+          <p className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200">
+            无法加载技能列表（请确认后端在{" "}
+            <code className="rounded bg-black/30 px-1">localhost:3001</code>{" "}
+            运行，且与本前端同源代理 <code className="rounded bg-black/30 px-1">/api</code>）。
+          </p>
+        )}
+        {!error && !isLoading && skills.length === 0 && (
+          <p className="mb-3 text-center text-[11px] text-gray-500">
+            未发现任何 Skill。可设置环境变量{" "}
+            <code className="text-gray-400">SKILLS_OPENCLAW_DIR</code>{" "}
+            指向技能目录，或将技能放入{" "}
+            <code className="text-gray-400">.openclaw/bundled-skills</code>。
+          </p>
+        )}
         {activeTab === "marketplace" ? (
           <SkillMarketplace />
         ) : activeTab === "system" ? (
@@ -189,7 +209,7 @@ export function SkillList() {
               />
             ))}
             {filteredSkills.length === 0 && (
-              <p className="py-8 text-center text-sm text-gray-500">
+              <p className="py-8 text-center text-xs text-gray-500">
                 无匹配的 Skill
               </p>
             )}
@@ -201,15 +221,15 @@ export function SkillList() {
         <button
           type="button"
           onClick={() => setCreateOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-white/20 bg-surface-2 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:border-accent hover:bg-surface-3 hover:text-gray-100"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-white/20 bg-surface-2 py-2 text-xs font-medium text-gray-300 transition-colors hover:border-accent hover:bg-surface-3 hover:text-gray-100"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
           创建 Skill
         </button>
         <button
           type="button"
           onClick={() => setImportOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-surface-2 py-2 text-sm text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-surface-2 py-2 text-xs font-medium text-gray-400 transition-colors hover:bg-surface-3 hover:text-gray-200"
         >
           导入 Skill
         </button>

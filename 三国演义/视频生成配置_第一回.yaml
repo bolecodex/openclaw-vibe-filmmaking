@@ -1,0 +1,618 @@
+name: 三国演义第一回_宴桃园豪杰三结义 视频生成配置
+version: 1.0
+total_duration: 1200
+output:
+  path: "output/三国演义_第一回.mp4"
+  resolution: "1920x1080"
+  fps: 24
+  bitrate: "8M"
+  format: "mp4"
+  audio_bitrate: "192k"
+
+assets:
+  characters_dir: "assets/characters/"
+  scenes_dir: "assets/scenes/"
+  shots_dir: "assets/shots/"
+  audio_dir: "assets/audio/"
+  bgm_dir: "assets/bgm/"
+  sfx_dir: "assets/sfx/"
+
+video_config:
+  opening_duration: 40
+  closing_duration: 10
+  transition:
+    type: "fade"
+    duration: 0.5
+  text_overlay:
+    font: "思源黑体 Bold"
+    font_size: 48
+    color: "#FFFFFF"
+    stroke_color: "#000000"
+    stroke_width: 2
+    position: "bottom"
+    margin: 50
+
+timeline:
+  - scene_id: opening_scene
+    scene_name: 开场诗
+    start_time: 0
+    end_time: 40
+    shots:
+      - shot_id: opening_1
+        start_time: 0
+        end_time: 10
+        image: "shots/opening_1.jpg"
+        audio: "audio/dub_001.mp3"
+        bgm: "bgm/epic_opening.mp3"
+        subtitle: "滚滚长江东逝水，浪花淘尽英雄。"
+        transition: "none"
+      - shot_id: opening_2
+        start_time: 10
+        end_time: 18
+        image: "shots/opening_2.jpg"
+        audio: "audio/dub_002.mp3"
+        bgm: "bgm/epic_opening.mp3"
+        subtitle: "是非成败转头空：青山依旧在，几度夕阳红。"
+        transition: "fade"
+      - shot_id: opening_3
+        start_time: 18
+        end_time: 28
+        image: "shots/opening_3.jpg"
+        audio: "audio/dub_003.mp3"
+        bgm: "bgm/epic_opening.mp3"
+        subtitle: "白发渔樵江渚上，惯看秋月春风。"
+        transition: "fade"
+      - shot_id: opening_4
+        start_time: 28
+        end_time: 40
+        image: "shots/opening_4.jpg"
+        audio: "audio/dub_004.mp3"
+        bgm: "bgm/epic_opening.mp3"
+        subtitle: "一壶浊酒喜相逢：古今多少事，都付笑谈中。"
+        transition: "fade"
+
+  - scene_id: court_scene
+    scene_name: 宫廷之乱
+    start_time: 40
+    end_time: 160
+    shots:
+      - shot_id: court_1
+        start_time: 40
+        end_time: 55
+        image: "shots/court_1.jpg"
+        audio: "audio/dub_005.mp3"
+        bgm: "bgm/palace_solemn.mp3"
+        subtitle: "话说天下大势，分久必合，合久必分。周末七国分争，并入于秦。及秦灭之后，楚、汉分争，又并入于汉。"
+        transition: "fade"
+      - shot_id: court_2
+        start_time: 55
+        end_time: 65
+        image: "shots/court_2.jpg"
+        audio: "audio/dub_006.mp3"
+        bgm: "bgm/palace_solemn.mp3"
+        subtitle: "汉朝自高祖斩白蛇而起义，一统天下。后来光武中兴，传至献帝，遂分为三国。"
+        transition: "fade"
+      - shot_id: court_3
+        start_time: 65
+        end_time: 80
+        image: "shots/court_3.jpg"
+        audio: "audio/dub_007.mp3"
+        bgm: "bgm/palace_tense.mp3"
+        subtitle: "推其致乱之由，殆始于桓、灵二帝。桓帝禁锢善类，崇信宦官。"
+        transition: "fade"
+      - shot_id: court_4
+        start_time: 80
+        end_time: 92
+        image: "shots/court_4.jpg"
+        audio: "audio/dub_008.mp3"
+        bgm: "bgm/palace_tense.mp3"
+        subtitle: "及桓帝崩，灵帝即位，大将军窦武、太傅陈蕃，共相辅佐。时有宦官曹节等弄权。"
+        transition: "fade"
+      - shot_id: court_5
+        start_time: 92
+        end_time: 110
+        image: "shots/court_5.jpg"
+        audio: "audio/dub_009.mp3"
+        bgm: "bgm/fight_intense.mp3"
+        subtitle: "窦武、陈蕃谋诛之，作事不密，反为所害，中涓自此愈横。"
+        transition: "fade"
+      - shot_id: court_6
+        start_time: 110
+        end_time: 130
+        image: "shots/court_6.jpg"
+        audio: "audio/dub_010.mp3"
+        bgm: "bgm/horror_thriller.mp3"
+        subtitle: "建宁二年四月望日，帝御温德殿。方陞座，殿角狂风骤起，只见一条大青蛇，从梁上飞将下来，蟠于椅上。帝惊倒，左右急救入宫，百官俱奔避。"
+        transition: "fade"
+      - shot_id: court_7
+        start_time: 130
+        end_time: 145
+        image: "shots/court_7.jpg"
+        audio: "audio/dub_011.mp3"
+        bgm: "bgm/horror_thriller.mp3"
+        subtitle: "须臾，蛇不见了。忽然大雷大雨，加以冰雹，落到半夜方止，坏却房屋无数。"
+        transition: "fade"
+      - shot_id: court_8
+        start_time: 145
+        end_time: 160
+        image: "shots/court_8.jpg"
+        audio: "audio/dub_012.mp3"
+        bgm: "bgm/horror_oppressive.mp3"
+        subtitle: "建宁四年二月，洛阳地震；又海水泛滥，沿海居民，尽被大浪卷入海中。光和元年，雌鸡化雄。种种不祥，非止一端。"
+        transition: "fade"
+
+  - scene_id: ZhangJiao_scene
+    scene_name: 张角起义
+    start_time: 160
+    end_time: 340
+    shots:
+      - shot_id: ZhangJiao_1
+        start_time: 160
+        end_time: 172
+        image: "shots/ZhangJiao_1.jpg"
+        audio: "audio/dub_013.mp3"
+        bgm: "bgm/mountain_quiet.mp3"
+        subtitle: "时钜鹿郡有兄弟三人：一名张角，一名张宝，一名张梁。那张角本是个不第秀才，因入山采药。"
+        transition: "fade"
+      - shot_id: ZhangJiao_2
+        start_time: 172
+        end_time: 187
+        image: "shots/ZhangJiao_2.jpg"
+        audio: "audio/dub_014.mp3"
+        bgm: "bgm/mystic_immortal.mp3"
+        subtitle: "遇一老人，碧眼童颜，手执藜杖，唤角至一洞中，以天书三卷授之。"
+        transition: "fade"
+      - shot_id: ZhangJiao_3
+        start_time: 187
+        end_time: 199
+        image: "shots/ZhangJiao_3.jpg"
+        audio: "audio/dub_015.mp3"
+        bgm: "bgm/mystic_holy.mp3"
+        subtitle: "老人曰：此名太平要术。汝得之，当代天宣化，普救世人。若萌异心，必获恶报。"
+        transition: "fade"
+      - shot_id: ZhangJiao_4
+        start_time: 199
+        end_time: 202
+        image: "shots/ZhangJiao_3.jpg"
+        audio: "audio/dub_016.mp3"
+        bgm: "bgm/mystic_holy.mp3"
+        subtitle: "敢问仙长尊姓大名？"
+        transition: "none"
+      - shot_id: ZhangJiao_5
+        start_time: 202
+        end_time: 210
+        image: "shots/ZhangJiao_4.jpg"
+        audio: "audio/dub_017.mp3"
+        bgm: "bgm/mystic_immortal.mp3"
+        subtitle: "吾乃南华老仙也。"
+        transition: "fade"
+      - shot_id: ZhangJiao_6
+        start_time: 210
+        end_time: 225
+        image: "shots/ZhangJiao_5.jpg"
+        audio: "audio/dub_018.mp3"
+        bgm: "bgm/mystic.mp3"
+        subtitle: "言讫，化阵清风而去。角得此书，晓夜功习，能呼风唤雨，号为“太平道人”。"
+        transition: "fade"
+      - shot_id: ZhangJiao_7
+        start_time: 225
+        end_time: 243
+        image: "shots/ZhangJiao_6.jpg"
+        audio: "audio/dub_019.mp3"
+        bgm: "bgm/village_quiet.mp3"
+        subtitle: "中平元年正月内，疫气流行，张角散施符水，为人治病，自称“大贤良师”。"
+        transition: "fade"
+      - shot_id: ZhangJiao_8
+        start_time: 243
+        end_time: 263
+        image: "shots/ZhangJiao_7.jpg"
+        audio: "audio/dub_020.mp3"
+        bgm: "bgm/uprising_grand.mp3"
+        subtitle: "角有徒弟五百馀人，云游四方，皆能书符念咒。次后徒众日多，角乃立三十六方，大方万馀人，小方六七千，各立渠帅，称为将军。"
+        transition: "fade"
+      - shot_id: ZhangJiao_9
+        start_time: 263
+        end_time: 278
+        image: "shots/ZhangJiao_8.jpg"
+        audio: "audio/dub_021.mp3"
+        bgm: "bgm/uprising_grand.mp3"
+        subtitle: "苍天已死，黄天当立；岁在甲子，天下大吉！"
+        transition: "fade"
+        sfx: "sfx/crowd_chant.mp3"
+      - shot_id: ZhangJiao_10
+        start_time: 278
+        end_time: 293
+        image: "shots/ZhangJiao_9.jpg"
+        audio: "audio/dub_022.mp3"
+        bgm: "bgm/tense.mp3"
+        subtitle: "角遣其党马元义，暗赍金帛，结交中涓封胥，以为内应。不料弟子唐周乃径赴省中告变。"
+        transition: "fade"
+      - shot_id: ZhangJiao_11
+        start_time: 293
+        end_time: 303
+        image: "shots/ZhangJiao_10.jpg"
+        audio: "audio/dub_023.mp3"
+        bgm: "bgm/fight_intense.mp3"
+        subtitle: "帝召大将军何进调兵擒马元义，斩之；次收封谞等一干人下狱。"
+        transition: "fade"
+      - shot_id: ZhangJiao_12
+        start_time: 303
+        end_time: 318
+        image: "shots/ZhangJiao_11.jpg"
+        audio: "audio/dub_024.mp3"
+        bgm: "bgm/uprising_grand.mp3"
+        subtitle: "张角闻知事露，星夜举兵，自称“天公将军”，张宝称“地公将军”，张梁称“人公将军”。"
+        transition: "fade"
+      - shot_id: ZhangJiao_13
+        start_time: 318
+        end_time: 328
+        image: "shots/ZhangJiao_11.jpg"
+        audio: "audio/dub_025.mp3"
+        bgm: "bgm/uprising_grand.mp3"
+        subtitle: "今汉运将终，大圣人出。汝等皆宜顺天从正，以乐太平！"
+        transition: "none"
+        sfx: "sfx/crowd_cheer.mp3"
+      - shot_id: ZhangJiao_14
+        start_time: 328
+        end_time: 340
+        image: "shots/ZhangJiao_11.jpg"
+        bgm: "bgm/uprising_grand.mp3"
+        transition: "fade"
+        duration: 2
+
+  - scene_id: meet_heroes_scene
+    scene_name: 英雄相遇
+    start_time: 340
+    end_time: 490
+    shots:
+      - shot_id: meet_1
+        start_time: 340
+        end_time: 355
+        image: "shots/meet_1.jpg"
+        audio: "audio/dub_026.mp3"
+        bgm: "bgm/village_quiet.mp3"
+        subtitle: "且说张角一军，前犯幽州界分。幽州太守刘焉，闻得贼兵将至，随即出榜招募义兵。榜文行到涿县，引出涿县中一个英雄。"
+        transition: "fade"
+      - shot_id: meet_2
+        start_time: 355
+        end_time: 375
+        image: "shots/meet_2.jpg"
+        audio: "audio/dub_027.mp3"
+        bgm: "bgm/hero_entry_liu.mp3"
+        subtitle: "那人不甚好读书；性宽和，寡言语，喜怒不言于色；素有大志，专好结交天下豪杰；生得身长七尺五寸，两耳垂肩，双手过膝，目能自顾其耳，面如冠玉，唇如涂脂；中山靖王刘胜之后，汉景帝阁下玄孙：姓刘，名备，字玄德。"
+        transition: "fade"
+      - shot_id: meet_3
+        start_time: 375
+        end_time: 383
+        image: "shots/meet_2.jpg"
+        audio: "audio/dub_028.mp3"
+        bgm: "bgm/street_quiet.mp3"
+        subtitle: "当日见了榜文，玄德慨然长叹。"
+        transition: "fade"
+      - shot_id: meet_4
+        start_time: 383
+        end_time: 390
+        image: "shots/meet_7.jpg"
+        audio: "audio/dub_029.mp3"
+        bgm: "bgm/hero_entry_zhang.mp3"
+        subtitle: "大丈夫不与国家出力，何故长叹？"
+        transition: "fade"
+      - shot_id: meet_5
+        start_time: 390
+        end_time: 405
+        image: "shots/meet_7.jpg"
+        audio: "audio/dub_030.mp3"
+        bgm: "bgm/hero_entry_zhang.mp3"
+        subtitle: "玄德回视其人：身长八尺，豹头环眼，燕颔虎须，声若巨雷，势如奔马。其人姓张，名飞，字翼德。"
+        transition: "fade"
+      - shot_id: meet_6
+        start_time: 405
+        end_time: 410
+        image: "shots/meet_8.jpg"
+        audio: "audio/dub_031.mp3"
+        bgm: "bgm/tavern.mp3"
+        subtitle: "我本汉室宗亲，姓刘，名备。今闻黄巾倡乱，有志欲破贼安民；恨力不能，故长叹耳。"
+        transition: "fade"
+      - shot_id: meet_7
+        start_time: 410
+        end_time: 420
+        image: "shots/meet_8.jpg"
+        audio: "audio/dub_032.mp3"
+        bgm: "bgm/tavern.mp3"
+        subtitle: "吾颇有资财，当招募乡勇，与公同举大事，如何？"
+        transition: "none"
+        sfx: "sfx/table_hit.mp3"
+      - shot_id: meet_8
+        start_time: 420
+        end_time: 425
+        image: "shots/meet_9.jpg"
+        audio: "audio/dub_033.mp3"
+        bgm: "bgm/tavern.mp3"
+        subtitle: "玄德甚喜，遂与同入村店中饮酒。正饮间，见一大汉，推著一辆车子，到店门首歇了。"
+        transition: "fade"
+      - shot_id: meet_9
+        start_time: 425
+        end_time: 435
+        image: "shots/meet_9.jpg"
+        audio: "audio/dub_034.mp3"
+        bgm: "bgm/hero_entry_guan.mp3"
+        subtitle: "快斟酒来吃，我待赶入城去投军。"
+        transition: "fade"
+      - shot_id: meet_10
+        start_time: 435
+        end_time: 450
+        image: "shots/meet_10.jpg"
+        audio: "audio/dub_035.mp3"
+        bgm: "bgm/hero_entry_guan.mp3"
+        subtitle: "玄德看其人：身长九尺，髯长二尺；面如重枣，唇如涂脂；丹凤眼，卧蚕眉：相貌堂堂，威风凛凛。其人姓关，名羽，字云长。"
+        transition: "fade"
+      - shot_id: meet_11
+        start_time: 450
+        end_time: 490
+        image: "shots/meet_10.jpg"
+        bgm: "bgm/hero_entry_guan.mp3"
+        transition: "fade"
+        duration: 2
+
+  - scene_id: taoyuan_scene
+    scene_name: 桃园结义
+    start_time: 490
+    end_time: 610
+    shots:
+      - shot_id: taoyuan_1
+        start_time: 490
+        end_time: 505
+        image: "shots/taoyuan_1.jpg"
+        audio: "audio/dub_036.mp3"
+        bgm: "bgm/taoyuan_warm.mp3"
+        subtitle: "吾庄后有一桃园，花开正盛；明日当于园中祭告天地，我三人结为兄弟，协力同心，然后可图大事。"
+        transition: "fade"
+      - shot_id: taoyuan_2
+        start_time: 505
+        end_time: 510
+        image: "shots/taoyuan_1.jpg"
+        audio: "audio/dub_037.mp3"
+        bgm: "bgm/taoyuan_warm.mp3"
+        subtitle: "如此甚好。"
+        transition: "none"
+      - shot_id: taoyuan_3
+        start_time: 510
+        end_time: 515
+        image: "shots/taoyuan_1.jpg"
+        audio: "audio/dub_038.mp3"
+        bgm: "bgm/taoyuan_warm.mp3"
+        subtitle: "如此甚好。"
+        transition: "none"
+      - shot_id: taoyuan_4
+        start_time: 515
+        end_time: 540
+        image: "shots/taoyuan_3.jpg"
+        audio: "audio/dub_039.mp3"
+        bgm: "bgm/taoyuan_holy.mp3"
+        subtitle: "念刘备、关羽、张飞，虽然异姓，既结为兄弟，则同心协力，救困扶危；上报国家，下安黎庶；不求同年同月同日生，只愿同年同月同日死。皇天后土，实鉴此心。背义忘恩，天人共戮！"
+        transition: "fade"
+        sfx: "sfx/incense_burn.mp3"
+      - shot_id: taoyuan_5
+        start_time: 540
+        end_time: 555
+        image: "shots/taoyuan_4.jpg"
+        audio: "audio/dub_040.mp3"
+        bgm: "bgm/taoyuan_festival.mp3"
+        subtitle: "誓毕，拜玄德为兄，关羽次之，张飞为弟。祭罢天地，复宰牛设酒，聚乡中勇士，得三百馀人，就桃园中痛饮一醉。"
+        transition: "fade"
+        sfx: "sfx/crowd_cheer.mp3"
+      - shot_id: taoyuan_6
+        start_time: 555
+        end_time: 610
+        image: "shots/taoyuan_4.jpg"
+        bgm: "bgm/taoyuan_festival.mp3"
+        transition: "fade"
+        duration: 2
+
+  - scene_id: first_battle_scene
+    scene_name: 首战告捷
+    start_time: 610
+    end_time: 760
+    shots:
+      - shot_id: battle_1
+        start_time: 610
+        end_time: 625
+        image: "shots/battle_3.jpg"
+        audio: "audio/dub_041.mp3"
+        bgm: "bgm/war_prepare.mp3"
+        subtitle: "不数日，人报黄巾贼将程远志统兵五万来犯涿郡。刘焉令邹靖引玄德等三人，统兵五百，前去破敌。"
+        transition: "fade"
+      - shot_id: battle_2
+        start_time: 625
+        end_time: 635
+        image: "shots/battle_4.jpg"
+        audio: "audio/dub_042.mp3"
+        bgm: "bgm/war_battle.mp3"
+        subtitle: "反国逆贼，何不早降！"
+        transition: "fade"
+      - shot_id: battle_3
+        start_time: 635
+        end_time: 643
+        image: "shots/battle_4.jpg"
+        audio: "audio/dub_043.mp3"
+        bgm: "bgm/war_battle.mp3"
+        subtitle: "程远志大怒，遣副将邓茂出战。"
+        transition: "fade"
+      - shot_id: battle_4
+        start_time: 643
+        end_time: 650
+        image: "shots/battle_5.jpg"
+        audio: "audio/dub_044.mp3"
+        bgm: "bgm/war_battle.mp3"
+        subtitle: "鼠辈安敢造次！"
+        transition: "fade"
+        sfx: "sfx/spear_stab.mp3"
+      - shot_id: battle_5
+        start_time: 650
+        end_time: 658
+        image: "shots/battle_6.jpg"
+        audio: "audio/dub_045.mp3"
+        bgm: "bgm/war_battle.mp3"
+        subtitle: "程远志见折了邓茂，拍马舞刀，直取张飞。云长舞动大刀，纵马飞迎。"
+        transition: "fade"
+      - shot_id: battle_6
+        start_time: 658
+        end_time: 665
+        image: "shots/battle_6.jpg"
+        audio: "audio/dub_046.mp3"
+        bgm: "bgm/war_battle.mp3"
+        subtitle: "逆贼受死！"
+        transition: "none"
+        sfx: "sfx/sword_slash.mp3"
+      - shot_id: battle_7
+        start_time: 665
+        end_time: 675
+        image: "shots/battle_7.jpg"
+        audio: "audio/dub_047.mp3"
+        bgm: "bgm/war_victory.mp3"
+        subtitle: "众贼见程远志被斩，皆倒戈而走。玄德挥军追赶，投降者不计其数，大胜而回。"
+        transition: "fade"
+        sfx: "sfx/army_cheer.mp3"
+      - shot_id: battle_8
+        start_time: 675
+        end_time: 760
+        image: "shots/battle_7.jpg"
+        bgm: "bgm/war_victory.mp3"
+        transition: "fade"
+        duration: 2
+
+  - scene_id: cao_cao_scene
+    scene_name: 曹操出场
+    start_time: 760
+    end_time: 880
+    shots:
+      - shot_id: cao_1
+        start_time: 760
+        end_time: 775
+        image: "shots/cao_5.jpg"
+        audio: "audio/dub_048.mp3"
+        bgm: "bgm/caocao_entry.mp3"
+        subtitle: "张梁、张宝引败残军士，夺路而走。忽见一彪军马，尽打红旗，当头来到，截住去路。为首闪出一将：身长七尺，细眼长髯；官拜骑都尉；沛国谯郡人也，姓曹，名操，字孟德。"
+        transition: "fade"
+      - shot_id: cao_2
+        start_time: 775
+        end_time: 790
+        image: "shots/cao_7.jpg"
+        audio: "audio/dub_049.mp3"
+        bgm: "bgm/war_battle.mp3"
+        subtitle: "逆贼哪里走！杀！"
+        transition: "fade"
+        sfx: "sfx/army_shout.mp3"
+      - shot_id: cao_3
+        start_time: 790
+        end_time: 880
+        image: "shots/cao_7.jpg"
+        bgm: "bgm/war_battle.mp3"
+        transition: "fade"
+        duration: 2
+
+  - scene_id: ending_scene
+    scene_name: 回救董卓
+    start_time: 880
+    end_time: 1200
+    shots:
+      - shot_id: end_1
+        start_time: 880
+        end_time: 895
+        image: "shots/end_2.jpg"
+        audio: "audio/dub_050.mp3"
+        bgm: "bgm/sad.mp3"
+        subtitle: "玄德引关、张回广宗，到得半路，只见一簇军马，护送一辆槛车；车中之囚，乃卢植也。玄德大惊，滚鞍下马。"
+        transition: "fade"
+      - shot_id: end_2
+        start_time: 895
+        end_time: 915
+        image: "shots/end_3.jpg"
+        audio: "audio/dub_051.mp3"
+        bgm: "bgm/sad.mp3"
+        subtitle: "我围张角，将次可破；因角用妖术，未能即胜。朝廷差黄门左丰前来体探，问我索取贿赂。我答曰：‘军粮尚缺，安有馀钱奉承天使？’左丰挟恨，回奏朝廷，说我高垒不战，惰慢军心；因此朝廷震怒，遣中郎将董卓来代将我兵，取我回京问罪。"
+        transition: "fade"
+      - shot_id: end_3
+        start_time: 915
+        end_time: 925
+        image: "shots/end_4.jpg"
+        audio: "audio/dub_052.mp3"
+        bgm: "bgm/angry.mp3"
+        subtitle: "甚么！这等昏官，待我斩了护送军士，救了卢中郎！"
+        transition: "fade"
+        sfx: "sfx/sword_draw.mp3"
+      - shot_id: end_4
+        start_time: 925
+        end_time: 930
+        image: "shots/end_4.jpg"
+        audio: "audio/dub_053.mp3"
+        bgm: "bgm/angry.mp3"
+        subtitle: "三弟不可！朝廷自有公论，汝岂可造次？"
+        transition: "none"
+      - shot_id: end_5
+        start_time: 930
+        end_time: 945
+        image: "shots/end_5.jpg"
+        audio: "audio/dub_054.mp3"
+        bgm: "bgm/war_tense.mp3"
+        subtitle: "三人引军北行，忽闻山后喊声大震。玄德引关、张纵马上高冈望之，见汉军大败，后面漫山塞野，黄巾盖地而来，旗上大书“天公将军”。"
+        transition: "fade"
+      - shot_id: end_6
+        start_time: 945
+        end_time: 950
+        image: "shots/end_5.jpg"
+        audio: "audio/dub_055.mp3"
+        bgm: "bgm/war_tense.mp3"
+        subtitle: "此张角也！可速战！"
+        transition: "none"
+      - shot_id: end_7
+        start_time: 950
+        end_time: 960
+        image: "shots/end_6.jpg"
+        audio: "audio/dub_056.mp3"
+        bgm: "bgm/war_battle.mp3"
+        subtitle: "三人飞马引军而出。张角正杀败董卓，乘势赶来，忽遇三人冲杀，角军大乱，败走五十馀里。"
+        transition: "fade"
+        sfx: "sfx/war_sounds.mp3"
+      - shot_id: end_8
+        start_time: 960
+        end_time: 965
+        image: "shots/end_7.jpg"
+        audio: "audio/dub_057.mp3"
+        bgm: "bgm/camp_quiet.mp3"
+        subtitle: "三位壮士，现居何职啊？"
+        transition: "fade"
+      - shot_id: end_9
+        start_time: 965
+        end_time: 970
+        image: "shots/end_7.jpg"
+        audio: "audio/dub_058.mp3"
+        bgm: "bgm/camp_quiet.mp3"
+        subtitle: "白身。"
+        transition: "none"
+      - shot_id: end_10
+        start_time: 970
+        end_time: 980
+        image: "shots/end_8.jpg"
+        audio: "audio/dub_059.mp3"
+        bgm: "bgm/angry.mp3"
+        subtitle: "我等亲赴血战，救了这厮，他却如此无礼！若不杀他，难消我气！"
+        transition: "fade"
+        sfx: "sfx/sword_draw.mp3"
+      - shot_id: end_11
+        start_time: 980
+        end_time: 1200
+        image: "shots/end_9.jpg"
+        audio: "audio/dub_060.mp3"
+        bgm: "bgm/suspense.mp3"
+        subtitle: "毕竟董卓性命如何，且听下文分解。"
+        transition: "fade"
+        duration: 220
+
+export_settings:
+  add_watermark: false
+  watermark_text: "三国演义 第一回"
+  watermark_position: "top-right"
+  add_opening_logo: false
+  add_closing_credits: true
+  credits_text: "三国演义 第一回\n宴桃园豪杰三结义\n斩黄巾英雄首立功\n\n感谢观看"

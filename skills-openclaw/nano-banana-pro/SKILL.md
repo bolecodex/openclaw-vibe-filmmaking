@@ -1,5 +1,6 @@
 ---
 name: nano-banana-pro
+displayName: Nano Banana 图像
 version: 1.0.0
 description: 使用 Nano Banana Pro 模型生成或编辑图像。当用户想要文生图、图像编辑，或提到 nano banana、Google 图像生成时使用此 skill。
 trigger: "banana|nano banana|香蕉|Google图像"

@@ -81,7 +81,7 @@ function MarketplaceCard({
 }) {
   return (
     <div className="rounded-lg border border-white/10 bg-surface-2 p-4">
-      <h4 className="font-medium text-gray-100">{skill.name}</h4>
+      <h4 className="font-medium text-gray-100">{skill.displayName || skill.name}</h4>
       <p className="mt-1 line-clamp-2 text-sm text-gray-400">{skill.description}</p>
       <div className="mt-2 flex flex-wrap gap-1">
         {skill.tags.slice(0, 3).map((tag) => (

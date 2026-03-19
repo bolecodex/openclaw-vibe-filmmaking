@@ -1,5 +1,6 @@
 ---
 name: novel-05-shots-to-audio
+displayName: 分镜台词配音
 version: 1.0.0
 description: 将分镜头数据转换为配音音频。读取 shots/*.yaml 分镜文件，使用 Minimax TTS 为每条台词生成配音，支持固定角色音色映射。当用户想要为分镜配音、生成台词音频、制作有声内容时使用此 skill。
 trigger: "配音|TTS|语音合成|shots to audio|生成音频"
@@ -8,14 +9,16 @@ tools: [filesystem, shell]
 
 # 分镜头配音生成
 
-> **API 调用方式**：本 skill 中的 `speak` MCP 工具，通过 shell 调用 CLI 包装器执行：
-> ```bash
-> python /Users/m007/codes/long_video_skills/skills-openclaw/mcp-proxy/xskill_api.py speak --action list_voices
-> python /Users/m007/codes/long_video_skills/skills-openclaw/mcp-proxy/xskill_api.py speak --action synthesize --text "文本" --voice_id VOICE_ID
-> ```
-> 工具返回 JSON 结果。
+> **API 调用方式**（二选一，由 step-actions 的 `tts_model` 决定）：
+> - **火山豆包语音（推荐）**：与图像/视频统一走火山 API。
+>   ```bash
+>   python {workspace}/skills-openclaw/volc-tts/volc_tts_api.py list_voices
+>   python {workspace}/skills-openclaw/volc-tts/volc_tts_api.py synthesize --text "台词" --voice_id VOICE_ID --output out.mp3
+>   ```
+>   `voice_mapping` 中的 `voice_id` 使用豆包发音人 ID（如 `zh_female_shuangkuaisisi_moon_bigtts`），见 `list_voices` 或火山文档。
+> - **Minimax（兼容）**：通过 shell 调用 `xskill_api.py speak --action synthesize` / `list_voices`。
 
-使用 Minimax TTS 将分镜头台词转换为配音音频，保持角色音色一致性。
+使用 TTS 将分镜头台词转换为配音音频，保持角色音色一致性。优先使用火山豆包语音（volc-tts）以与全链路火山统一。
 
 ## 项目目录定位规则（必须首先执行）
 
@@ -89,41 +92,41 @@ tools: [filesystem, shell]
 
 ### 2.2 创建默认映射
 
-若无映射，使用默认配置并写入 `_manifest.yaml`：
+若无映射，使用默认配置并写入 `_manifest.yaml`。**火山豆包语音**示例（voice_id 为豆包发音人 ID）：
 
 ```yaml
-# 新增到 _manifest.yaml
+# 火山 TTS 示例（volc-tts）
+voice_mapping:
+  旁白:
+    voice_id: "zh_male_ahu_conversation_wvae_bigtts"
+    voice_name: "阿虎对话"
+    description: "沉稳叙事"
+  苏晚:
+    voice_id: "zh_female_shuangkuaisisi_moon_bigtts"
+    voice_name: "双快思思"
+    description: "温婉坚韧"
+  _default_male:
+    voice_id: "zh_male_bvlazysheep"
+    voice_name: "懒羊羊"
+  _default_female:
+    voice_id: "zh_female_coral_moon_bigtts"
+    voice_name: "珊瑚"
+```
+
+**Minimax 示例**（兼容旧项目）：
+
+```yaml
 voice_mapping:
   旁白:
     voice_id: "Chinese (Mandarin)_Male_Announcer"
     voice_name: "播报男声"
-    description: "沉稳权威的叙事者"
   苏晚:
     voice_id: "female-yujie-jingpin"
     voice_name: "御姐音色-beta"
-    description: "18岁温婉坚韧女性"
-  陈屠:
-    voice_id: "male-qn-badao-jingpin"
-    voice_name: "霸道青年音色-beta"
-    description: "28岁沉稳带杀气男性"
-  赵衍:
-    voice_id: "Chinese (Mandarin)_Gentleman"
-    voice_name: "温润男声"
-    description: "高贵儒雅病弱太子"
-  沈清河:
-    voice_id: "male-qn-qingse-jingpin"
-    voice_name: "青涩青年音色-beta"
-    description: "轻佻嫌恶的前夫"
-  道士:
-    voice_id: "Chinese (Mandarin)_Reliable_Executive"
-    voice_name: "沉稳高管"
-    description: "中年阴鸷道士"
   _default_male:
     voice_id: "male-qn-jingying-jingpin"
-    voice_name: "精英青年音色-beta"
   _default_female:
     voice_id: "female-chengshu"
-    voice_name: "成熟女性音色"
 ```
 
 ### 2.3 更换角色音色
@@ -204,15 +207,18 @@ def get_voice_id(speaker, voice_mapping):
 
 ### 4.3 调用 TTS API
 
-使用 MCP 工具 `speak`：
+**方式 A：火山豆包语音（推荐）**
+
+每条台词调用一次同步合成，写入 `{项目目录}/shots/{场景名}/audio_{镜头编号}_{行序号}.mp3`，再更新分镜 YAML 的 `audio_path` / `audio_url`：
+
+```bash
+python skills-openclaw/volc-tts/volc_tts_api.py synthesize --text "台词内容" --voice_id "zh_female_shuangkuaisisi_moon_bigtts" --output "shots/SC_01_开篇悬念/audio_001_0.mp3"
+```
+
+**方式 B：MCP 工具 speak（Minimax）**
 
 ```python
-result = speak(
-    action="synthesize",
-    text=line.text,
-    voice_id=voice_id,
-    model="speech-2.8-hd"       # 高质量模型
-)
+result = speak(action="synthesize", text=line.text, voice_id=voice_id, model="speech-2.8-hd")
 audio_url = result['audio_url']
 ```
 
@@ -220,15 +226,16 @@ audio_url = result['audio_url']
 
 | 参数 | 值 | 说明 |
 |-----|-----|------|
-| `action` | `synthesize` | 语音合成操作 |
-| `text` | string | 要合成的文本（最大 10000 字符） |
-| `voice_id` | string | 音色 ID（通过 `action=list_voices` 获取） |
-| `model` | `speech-2.8-hd` | 高质量模型，支持语气词标签 |
-| `speed` | 0.5-2.0 | 语速，默认 1.0（可选） |
+| 火山 | `--voice_id` | 豆包发音人 ID（`list_voices` 或火山音色列表） |
+| 火山 | `--output` | 本地保存路径，避免依赖临时 URL |
+| Minimax | `model` | `speech-2.8-hd` 高质量 |
+| 通用 | `text` | 要合成的文本 |
 
-### 4.4 处理情绪标签（可选）
+### 4.4 情感/语气（S 级精品剧建议）
 
-若台词有 `emotion` 字段，可使用 speech-2.8 支持的语气词标签：
+若台词有 `emotion` 字段，可做以下处理以提升贴合度：
+- **火山豆包**：部分音色支持 `emotion`、`emotion_scale`、`context_texts`（见火山文档「多情感音色」「context_texts」）；可在调用异步/流式接口时传入对应参数；同步 `synthesize` 若 CLI 未暴露则先在文案中通过语气描述或 SSML 辅助。
+- **Minimax speech-2.8**：使用语气词标签：
 
 ```python
 EMOTION_TAGS = {

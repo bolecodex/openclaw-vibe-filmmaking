@@ -196,6 +196,65 @@ const REVIEW_RULES: Record<string, ReviewRule[]> = {
     { id: "sync-ok", label: "音画同步", type: "manual" },
     { id: "final-ok", label: "整体效果满意", type: "manual" },
   ],
+  "long-novel-to-script": [
+    {
+      id: "has-manifest", label: "切块 manifest 已生成", type: "auto",
+      check: (p) => ({
+        passed: existsSync(join(p, ".pipeline", "novel_chunks_manifest.json")),
+      }),
+    },
+    {
+      id: "has-final-script", label: "最终剧本文件已汇编", type: "auto",
+      check: (p) => {
+        const mp = join(p, ".pipeline", "novel_chunks_manifest.json");
+        if (!existsSync(mp)) return { passed: false, detail: "无 manifest" };
+        try {
+          const m = JSON.parse(readFileSync(mp, "utf-8")) as { final_script?: string };
+          const fn = m.final_script;
+          if (!fn) return { passed: false };
+          return { passed: existsSync(join(p, fn)), detail: fn };
+        } catch {
+          return { passed: false };
+        }
+      },
+    },
+    { id: "bible-ok", label: "圣经人物地名与正文一致", type: "manual" },
+  ],
+  "ai-edit-video": [
+    {
+      id: "has-edited", label: "edited 目录有输出 mp4", type: "auto",
+      check: (p) => {
+        const ed = join(p, "output", "edited");
+        if (!existsSync(ed)) return { passed: false, detail: "无 output/edited" };
+        const n = readdirSync(ed).filter((f) => f.endsWith(".mp4")).length;
+        return { passed: n > 0, detail: `${n} 个文件` };
+      },
+    },
+    { id: "edit-ok", label: "剪辑节奏与成片满意", type: "manual" },
+  ],
+  "video-quality-review": [
+    {
+      id: "has-report", label: "video_quality.json 已生成", type: "auto",
+      check: (p) => ({
+        passed: existsSync(join(p, ".pipeline", "video_quality.json")),
+      }),
+    },
+    {
+      id: "has-shots", label: "至少一条镜头评审记录", type: "auto",
+      check: (p) => {
+        const vp = join(p, ".pipeline", "video_quality.json");
+        if (!existsSync(vp)) return { passed: false };
+        try {
+          const j = JSON.parse(readFileSync(vp, "utf-8")) as { shots?: unknown[] };
+          const n = (j.shots ?? []).length;
+          return { passed: n > 0, detail: `${n} 条` };
+        } catch {
+          return { passed: false };
+        }
+      },
+    },
+    { id: "scores-ok", label: "低分镜头已处理或接受", type: "manual" },
+  ],
 };
 
 // --- Persistence ---

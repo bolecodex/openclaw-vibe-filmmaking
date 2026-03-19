@@ -28,6 +28,35 @@ export interface StepDefinition {
 
 export const STEP_DEFINITIONS: StepDefinition[] = [
   {
+    id: "long-novel-to-script",
+    name: "长篇小说→剧本",
+    skill: "novel-00-long-novel-to-script",
+    order: 0.5,
+    dependsOn: [],
+    optional: true,
+    actions: [
+      { id: "split", label: "切块初始化", variant: "primary" },
+      { id: "process-batch", label: "分析下一批块", variant: "primary" },
+      { id: "act-scripts", label: "生成分幕剧本", variant: "secondary" },
+      { id: "stitch", label: "汇编最终剧本", variant: "secondary" },
+    ],
+    params: [
+      {
+        key: "novel_path",
+        label: "小说文件绝对路径",
+        type: "text",
+        default: "",
+      },
+      {
+        key: "chunks_per_batch",
+        label: "每批处理块数",
+        type: "number",
+        default: 3,
+      },
+    ],
+    contentTab: "pipeline",
+  },
+  {
     id: "extract-characters",
     name: "提取角色",
     skill: "novel-01-character-extractor",
@@ -197,11 +226,23 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
         label: "图片模型",
         type: "select",
         options: [
-          { value: "seedream-5.0-lite", label: "Seedream 5.0 Lite" },
-          { value: "seedream-4.5", label: "Seedream 4.5" },
+          { value: "seedream-ark-4.5", label: "Seedream Ark 4.5 (火山)" },
+          { value: "seedream-ark-5.0-lite", label: "Seedream Ark 5.0 Lite (火山)" },
+          { value: "seedream-5.0-lite", label: "Seedream 5.0 Lite (xskill)" },
+          { value: "seedream-4.5", label: "Seedream 4.5 (xskill)" },
           { value: "flux-2-flash", label: "Flux 2 Flash" },
         ],
-        default: "seedream-5.0-lite",
+        default: "seedream-ark-4.5",
+      },
+      {
+        key: "quality_preset",
+        label: "画质预设",
+        type: "select",
+        options: [
+          { value: "standard", label: "标准" },
+          { value: "s-tier", label: "S 级精品" },
+        ],
+        default: "standard",
       },
       {
         key: "use_character_ref",
@@ -231,10 +272,22 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
         label: "TTS 模型",
         type: "select",
         options: [
+          { value: "volc-tts-hd", label: "火山豆包 HD" },
+          { value: "volc-tts-long", label: "火山豆包 长文本" },
           { value: "speech-2.8-hd", label: "Minimax HD" },
           { value: "speech-2.6", label: "Minimax 标准" },
         ],
-        default: "speech-2.8-hd",
+        default: "volc-tts-hd",
+      },
+      {
+        key: "quality_preset",
+        label: "音质预设",
+        type: "select",
+        options: [
+          { value: "standard", label: "标准" },
+          { value: "s-tier", label: "S 级精品" },
+        ],
+        default: "standard",
       },
     ],
     contentTab: "audio",
@@ -266,6 +319,16 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
         label: "视频时长(秒)",
         type: "number",
         default: 5,
+      },
+      {
+        key: "quality_preset",
+        label: "画质预设",
+        type: "select",
+        options: [
+          { value: "standard", label: "标准" },
+          { value: "s-tier", label: "S 级精品 (建议 5–8 秒、1080p/2K)" },
+        ],
+        default: "standard",
       },
     ],
     contentTab: "video",
@@ -304,6 +367,48 @@ export const STEP_DEFINITIONS: StepDefinition[] = [
         label: "字幕叠加",
         type: "toggle",
         default: true,
+      },
+    ],
+    contentTab: "video",
+  },
+  {
+    id: "ai-edit-video",
+    name: "AI辅助剪辑",
+    skill: "novel-08-ai-edit-video",
+    order: 7.5,
+    dependsOn: ["compose-video"],
+    optional: true,
+    actions: [
+      { id: "silence-trim-all", label: "批量去首尾静音", variant: "primary" },
+      { id: "apply-edl", label: "按EDL拼接", variant: "secondary" },
+    ],
+    params: [
+      {
+        key: "edl_file",
+        label: "EDL JSON 相对项目路径",
+        type: "text",
+        default: ".pipeline/edl_scene_01.json",
+      },
+    ],
+    contentTab: "video",
+  },
+  {
+    id: "video-quality-review",
+    name: "视频质量审核",
+    skill: "novel-09-video-quality-review",
+    order: 7.8,
+    dependsOn: ["compose-video"],
+    optional: true,
+    actions: [
+      { id: "sample-review", label: "全量抽检", variant: "primary" },
+      { id: "deep-review", label: "选中镜深审", variant: "secondary", requiresSelection: true },
+    ],
+    params: [
+      {
+        key: "shots_per_scene",
+        label: "每场景抽检镜头数",
+        type: "number",
+        default: 2,
       },
     ],
     contentTab: "video",

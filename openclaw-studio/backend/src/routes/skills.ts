@@ -22,6 +22,16 @@ router.get("/marketplace/search", (req, res) => {
   }
 });
 
+router.get("/:name/files", (req, res) => {
+  try {
+    const entries = sm.listSkillFileEntries(req.params.name);
+    if (!entries) return res.status(404).json({ error: "Not found" });
+    res.json({ entries, skillRoot: sm.getSkill(req.params.name)?.path });
+  } catch (err) {
+    res.status(500).json({ error: (err as Error).message });
+  }
+});
+
 router.get("/:name", (req, res) => {
   try {
     const skill = sm.getSkill(req.params.name);

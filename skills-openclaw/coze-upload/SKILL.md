@@ -1,5 +1,6 @@
 ---
 name: coze-upload
+displayName: 本地文件上传取链
 version: 1.0.0
 description: 上传本地文件到云端并返回可访问 URL。支持图片（png/jpg/webp/gif）和视频（mp4/webm/mov）。当用户需要上传图片、上传视频、将本地文件转为 URL、获取图片链接、获取视频链接、图片转链接、本地图片转 URL、附带了本地图片/视频路径需要转成链接、或提到 coze upload 时使用此 skill。
 trigger: "上传|upload|coze upload|图片转链接|文件上传"

@@ -1,5 +1,6 @@
 ---
 name: seedance-2
+displayName: 方舟 Seedance2 视频
 version: 1.0.0
 description: 使用火山方舟 Ark 官方 API 调用 Seedance 2.0 生成视频。支持文生视频、图生视频、原生音频、多模态参考。当用户提到 seedance 2.0、方舟视频生成、doubao-seedance 时使用此 skill。
 trigger: "seedance 2|seedance2|方舟视频|doubao-seedance|ark视频生成"
@@ -12,10 +13,17 @@ tools: [filesystem]
 >
 > **API 调用方式**：通过 shell 调用 CLI 包装器，直接请求火山方舟 Ark REST API：
 > ```bash
-> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py generate --prompt PROMPT [--image_url URL] [--duration SEC] [--resolution RES]
-> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py get --task_id TASK_ID
-> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py wait --task_id TASK_ID
-> python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seedance-2/seedance_ark_api.py run --prompt PROMPT [--output video.mp4]
+> # 文生视频 / 图生视频-首帧
+> python skills-openclaw/seedance-2/seedance_ark_api.py generate --prompt PROMPT [--image_url URL] [--duration SEC] [--resolution RES]
+> # 图生视频-首尾帧
+> python skills-openclaw/seedance-2/seedance_ark_api.py generate --prompt PROMPT --first_frame URL --last_frame URL
+> # 多模态参考（延长/编辑/全能）
+> python skills-openclaw/seedance-2/seedance_ark_api.py generate --prompt PROMPT --reference_images URL [URL...] [--reference_videos URL...] [--reference_audios URL...]
+> # 文生视频 + 联网搜索
+> python skills-openclaw/seedance-2/seedance_ark_api.py generate --prompt PROMPT --web_search
+> python skills-openclaw/seedance-2/seedance_ark_api.py get --task_id TASK_ID
+> python skills-openclaw/seedance-2/seedance_ark_api.py wait --task_id TASK_ID
+> python skills-openclaw/seedance-2/seedance_ark_api.py run --prompt PROMPT [--output video.mp4]
 > ```
 >
 > **环境变量**（在 `.env` 中配置）：
@@ -31,11 +39,14 @@ Seedance 2.0 是字节跳动最新一代 AI 视频生成模型，通过火山方
 
 | 特性 | 说明 |
 |------|------|
-| **文生视频** | 纯文本提示词生成 2K 视频，最长 15 秒 |
-| **图生视频** | 以图片为首帧动画化，精确控制主体运动 |
+| **文生视频** | 纯文本提示词生成视频，最长 15 秒；可选 `--web_search` 联网增强时效性 |
+| **图生视频-首帧** | 单张首帧图 + 提示词，动画化 |
+| **图生视频-首尾帧** | 首帧图 + 尾帧图 + 可选提示词，中间运动由模型补全（2.0 独有） |
+| **多模态参考** | 1~9 图 + 0~3 视频 + 0~3 音频 + 可选文本，可做**全新创作、编辑视频、延长视频**（2.0 独有） |
+| **编辑视频** | 多模态子集：1 段参考视频 + 1~9 参考图 + 编辑说明文本（如替换物体、改风格） |
+| **延长视频** | 多模态子集：2~3 段参考视频 + 衔接/续写提示词 |
 | **原生音频** | 同步生成对话、音效、背景音乐，支持唇形同步 |
-| **多模态参考** | 混合图片、视频、音频作为输入（2.0 独有） |
-| **高分辨率** | 支持 480p / 720p / 1080p / 2K |
+| **高分辨率** | 支持 480p / 720p（2.0 文档）；ratio 支持 16:9 / 9:16 / 1:1 / 4:3 / 3:4 / 21:9 / adaptive |
 | **快速生成** | 5 秒片段约 30-60 秒生成 |
 
 ## 可用模型
@@ -141,16 +152,25 @@ pending → processing → succeeded
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `--prompt` | string | **必填** | 视频生成提示词 |
-| `--image_url` | string | - | 首帧图片 URL（图生视频时使用） |
-| `--model` | string | doubao-seedance-2-0-pro-260215 | 模型名称 |
-| `--duration` | int | 5 | 视频时长（4-15 秒） |
-| `--resolution` | string | 720p | 分辨率：480p / 720p / 1080p |
-| `--aspect_ratio` | string | 16:9 | 宽高比：16:9 / 9:16 / 1:1 / 4:3 / 3:4 / 21:9 |
+| `--prompt` | string | 可选（多模态时可无） | 视频生成提示词 |
+| `--image_url` | string | - | 首帧图片 URL（图生视频-首帧） |
+| `--first_frame` | string | - | 首帧图 URL（与 `--last_frame` 同时用时为首尾帧模式） |
+| `--last_frame` | string | - | 尾帧图 URL（首尾帧模式） |
+| `--reference_images` | URL... | - | 多模态参考图，1~9 张，role=reference_image |
+| `--reference_videos` | URL... | - | 多模态参考视频，0~3 段，role=reference_video（延长/编辑时使用） |
+| `--reference_audios` | URL... | - | 多模态参考音频，0~3 段，role=reference_audio；不可单独使用，需至少 1 图或 1 视频 |
+| `--model` | string | doubao-seedance-2-0-pro-260215 | 模型名称（多模态/编辑/延长仅 2.0 模型支持） |
+| `--duration` | int | 5 | 视频时长（4-15 秒，或 -1 由模型自选） |
+| `--resolution` | string | 720p | 分辨率：480p / 720p |
+| `--aspect_ratio` | string | 16:9 | 宽高比：16:9 / 9:16 / 1:1 / 4:3 / 3:4 / 21:9 / adaptive |
 | `--no-audio` | flag | - | 关闭音频生成 |
-| `--seed` | int | - | 随机种子（-1 为随机） |
+| `--web_search` | flag | - | 开启联网搜索（仅文生视频时有效） |
+| `--watermark` | flag | - | 添加水印 |
+| `--seed` | int | - | 随机种子 |
 | `--output` / `-o` | string | - | 视频下载路径（仅 `run` 命令） |
 | `--timeout` | int | 600 | 最大等待秒数 |
+
+**场景互斥**：图生视频-首帧、图生视频-首尾帧、多模态参考 三种模式互斥，由参数组合自动判定。
 
 ---
 

@@ -1,5 +1,5 @@
 import YAML from "yaml";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 import {
@@ -358,6 +358,9 @@ function loadPipelineManifest(): { name: string; steps: PipelineStep[] } | null 
 }
 
 const ARTIFACT_CHECKS: Record<string, (dir: string, name: string) => boolean> = {
+  "novel-00-long-novel-to-script": (dir, name) =>
+    existsSync(join(dir, `${name}_剧本.md`)) ||
+    existsSync(join(dir, ".pipeline", "novel_chunks_manifest.json")),
   "novel-to-script": (dir) =>
     existsSync(join(dir, "scenes")) || existsSync(join(dir, "style.yaml")),
   "novel-01-character-extractor": (dir, name) =>
@@ -368,6 +371,14 @@ const ARTIFACT_CHECKS: Record<string, (dir: string, name: string) => boolean> = 
   "novel-05-shots-to-audio": (dir) => existsSync(join(dir, "shots", "_manifest.yaml")),
   "novel-07-remotion": (dir) => existsSync(join(dir, "output", "remotion")),
   "novel-07-shots-to-video": (dir) => existsSync(join(dir, "output", "videos")),
+  "novel-08-ai-edit-video": (dir) => {
+    const ed = join(dir, "output", "edited");
+    return (
+      existsSync(ed) && readdirSync(ed).some((f) => f.endsWith(".mp4"))
+    );
+  },
+  "novel-09-video-quality-review": (dir) =>
+    existsSync(join(dir, ".pipeline", "video_quality.json")),
 };
 
 export function buildPipelineContext(context?: AgentContext | null): string {

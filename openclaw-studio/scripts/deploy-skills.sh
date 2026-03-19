@@ -9,6 +9,7 @@ WORKSPACE_DIR="${OPENCLAW_HOME}/workspace/skills"
 BUNDLED_DIR="${OPENCLAW_HOME}/bundled-skills"
 
 BUNDLED_SKILLS=(
+  novel-00-long-novel-to-script
   novel-to-script
   novel-01-character-extractor
   novel-02-script-to-scenes
@@ -18,6 +19,8 @@ BUNDLED_SKILLS=(
   novel-06-shots-to-ai-video
   novel-07-shots-to-video
   novel-07-remotion
+  novel-08-ai-edit-video
+  novel-09-video-quality-review
 )
 
 is_bundled() {

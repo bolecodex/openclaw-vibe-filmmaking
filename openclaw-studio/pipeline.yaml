@@ -8,53 +8,75 @@ steps:
     skill: null
     order: 1
 
-  - id: novel-to-script
-    name: 改写剧本
-    skill: novel-to-script
+  - id: long-novel-to-script
+    name: 长篇小说→剧本
+    skill: novel-00-long-novel-to-script
     order: 2
     requires: [input-novel]
+    optional: true
+
+  - id: novel-to-script
+    name: 改写剧本(短篇)
+    skill: novel-to-script
+    order: 3
+    requires: [input-novel]
+    optional: true
 
   - id: extract-characters
     name: 提取角色
     skill: novel-01-character-extractor
-    order: 3
-    requires: [novel-to-script]
+    order: 4
+    requires: [input-novel]
 
   - id: script-to-scenes
     name: 剧本转场景
     skill: novel-02-script-to-scenes
-    order: 4
-    requires: [novel-to-script]
+    order: 5
+    requires: [input-novel]
 
   - id: scenes-to-storyboard
     name: 场景转分镜
     skill: novel-03-scenes-to-storyboard
-    order: 5
+    order: 6
     requires: [extract-characters, script-to-scenes]
 
   - id: shots-to-images
     name: 分镜出图
     skill: novel-04-shots-to-images
-    order: 6
+    order: 7
     requires: [scenes-to-storyboard]
 
   - id: shots-to-audio
     name: 分镜配音
     skill: novel-05-shots-to-audio
-    order: 7
+    order: 8
     requires: [scenes-to-storyboard]
     parallel_with: [shots-to-images]
 
   - id: shots-to-ai-video
     name: 分镜AI视频
     skill: novel-06-shots-to-ai-video
-    order: 8
+    order: 9
     requires: [scenes-to-storyboard]
     optional: true
 
   - id: compose-video
     name: 合成长视频
     skill: novel-07-remotion
-    order: 9
+    order: 10
     requires: [shots-to-images, shots-to-audio]
     alternatives: [novel-07-shots-to-video]
+
+  - id: ai-edit-video
+    name: AI辅助剪辑
+    skill: novel-08-ai-edit-video
+    order: 11
+    requires: [compose-video]
+    optional: true
+
+  - id: video-quality-review
+    name: 视频质量审核
+    skill: novel-09-video-quality-review
+    order: 12
+    requires: [compose-video]
+    optional: true

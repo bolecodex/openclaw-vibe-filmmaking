@@ -1,5 +1,6 @@
 ---
 name: novel-prop-extractor
+displayName: 剧本道具提取
 version: 1.0.0
 description: 从剧本/分镜中提取关键道具（武器、信物、法宝等），生成道具资产 YAML 并为每个道具生成配图。当用户需要提取道具、建立道具库、生成道具图时使用此 skill。
 trigger: "提取道具|道具资产|道具出图|prop extract"

@@ -1,5 +1,6 @@
 ---
 name: novel-06-shots-to-ai-video
+displayName: 分镜 AI 动画视频
 version: 2.0.0
 description: 将分镜头数据转换为 AI 动画视频。读取 shots/*.yaml 分镜文件，使用 Seedance 2.0 Pro 模型（火山方舟 Ark API）生成视频片段，支持图生视频和文生视频两种模式。当用户想要为分镜生成 AI 视频、制作动画片段、将分镜图片转为动态视频时使用此 skill。
 trigger: "AI视频|动画视频|shots to ai video|分镜视频|Seedance"
@@ -195,6 +196,8 @@ python /Users/bytedance/Documents/实验/long_video_skills/skills-openclaw/seeda
 | 6+ 条 | 10-15 秒 | 高潮/转折镜头 |
 
 > Seedance 2.0 支持 4-15 秒时长。
+
+**S 级精品剧建议**：当 step-actions 或 `style.yaml` 中 `quality_tier: "s"` 时，可提高单镜时长至 5–8 秒、分辨率选用 1080p 或 2K，以提升成片观感；参数可从 `style.yaml` 的 `video` 或流水线预设读取。
 
 ### 3.5 查询任务结果
 

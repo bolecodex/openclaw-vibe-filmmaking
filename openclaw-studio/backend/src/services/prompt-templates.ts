@@ -19,7 +19,17 @@ const ACTION_LABELS: Record<string, string> = {
   "reset-all": "重置全部并重新执行",
   "generate-images": "为所有角色生成肖像图",
   "regenerate-one": "重新生成选中角色的肖像图",
+  split: "切块初始化（仅脚本）",
+  "process-batch": "分析下一批小说块并更新圣经",
+  "act-scripts": "根据 manifest 生成分幕剧本",
+  stitch: "汇编最终剧本文件",
+  "silence-trim-all": "对 output/videos 批量去首尾静音到 output/edited",
+  "apply-edl": "按 EDL JSON 拼接成片",
+  "sample-review": "按场景抽检镜头并写入 video_quality.json",
+  "deep-review": "对选中分镜做深度视频审核",
 };
+
+const STEPS_ALLOW_SUBDIRS = new Set(["long-novel-to-script"]);
 
 function readStyleYaml(projectDir: string): string {
   const stylePath = join(projectDir, "style.yaml");
@@ -92,10 +102,23 @@ export function buildStepPrompt(stepId: string, ctx: StepPromptContext): string 
   sections.push(`[执行要求]`);
   sections.push(`1. 严格按照上方技能指南中的步骤执行`);
   sections.push(`2. 所有产物文件必须写入 ${ctx.projectDir}`);
-  sections.push(`3. 不要在 ${ctx.projectDir} 下创建额外的子目录层级`);
-  sections.push(`4. 文件名前缀使用「${ctx.projectName}」`);
+  if (STEPS_ALLOW_SUBDIRS.has(stepId)) {
+    sections.push(
+      `3. 本步骤允许子目录：novel_chunks/、.pipeline/、novel_analysis/、.review_frames/（按技能指南）`,
+    );
+    sections.push(`4. 文件名前缀使用「${ctx.projectName}」`);
+  } else {
+    sections.push(`3. 不要在 ${ctx.projectDir} 下创建额外的子目录层级`);
+    sections.push(`4. 文件名前缀使用「${ctx.projectName}」`);
+  }
   sections.push(`5. 执行完成后简要报告结果（完成数量、成功/失败等）`);
   sections.push(`6. 如果遇到错误，报告错误信息但不要中止整个任务`);
+  if (stepId === "long-novel-to-script" && ctx.params.novel_path) {
+    sections.push(`7. 小说源文件路径: ${ctx.params.novel_path}`);
+  }
+  if (stepId === "long-novel-to-script" && ctx.params.chunks_per_batch != null) {
+    sections.push(`8. 本批最多处理块数: ${ctx.params.chunks_per_batch}`);
+  }
 
   return sections.join("\n");
 }
