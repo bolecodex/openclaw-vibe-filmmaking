@@ -1,12 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { TokenUsage } from "../../stores/chat-store";
+import { api } from "../../lib/api-client";
 
 const CONTEXT_LIMIT = 200_000;
+
+const DEFAULT_INPUT_PER_MILLION_RMB = 1.2;
+const DEFAULT_OUTPUT_PER_MILLION_RMB = 8.0;
 
 function formatTokens(n: number): string {
   if (n < 1000) return String(n);
   if (n < 100_000) return `${(n / 1000).toFixed(1)}k`;
   return `${Math.round(n / 1000)}k`;
+}
+
+function estimateCostRmb(
+  input: number,
+  output: number,
+  inputPerMillion: number,
+  outputPerMillion: number
+): number {
+  const inCost = (input / 1_000_000) * inputPerMillion;
+  const outCost = (output / 1_000_000) * outputPerMillion;
+  return Math.round((inCost + outCost) * 100) / 100;
 }
 
 interface Props {
@@ -15,12 +30,32 @@ interface Props {
 
 export function TokenBadge({ usage }: Props) {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [pricing, setPricing] = useState<{
+    inputPerMillionRmb: number;
+    outputPerMillionRmb: number;
+  } | null>(null);
+
+  useEffect(() => {
+    api.usage
+      .pricing()
+      .then((p) => setPricing({ inputPerMillionRmb: p.inputPerMillionRmb, outputPerMillionRmb: p.outputPerMillionRmb }))
+      .catch(() =>
+        setPricing({
+          inputPerMillionRmb: DEFAULT_INPUT_PER_MILLION_RMB,
+          outputPerMillionRmb: DEFAULT_OUTPUT_PER_MILLION_RMB,
+        })
+      );
+  }, []);
 
   if (!usage || usage.total === 0) return null;
 
   const contextUsed = usage.context || usage.total;
   const ratio = Math.min(contextUsed / CONTEXT_LIMIT, 1);
   const percent = Math.round(ratio * 100);
+
+  const inputPerM = pricing?.inputPerMillionRmb ?? DEFAULT_INPUT_PER_MILLION_RMB;
+  const outputPerM = pricing?.outputPerMillionRmb ?? DEFAULT_OUTPUT_PER_MILLION_RMB;
+  const estimatedCost = estimateCostRmb(usage.input, usage.output, inputPerM, outputPerM);
 
   const barColor =
     ratio < 0.5
@@ -69,6 +104,10 @@ export function TokenBadge({ usage }: Props) {
               <span className={`tabular-nums ${textColor}`}>
                 {formatTokens(contextUsed)} / {formatTokens(CONTEXT_LIMIT)}
               </span>
+            </div>
+            <div className="flex justify-between gap-6 border-t border-white/5 pt-1">
+              <span>预估费用</span>
+              <span className="tabular-nums text-gray-300">约 ¥{estimatedCost.toFixed(2)}</span>
             </div>
           </div>
           {ratio >= 0.8 && (

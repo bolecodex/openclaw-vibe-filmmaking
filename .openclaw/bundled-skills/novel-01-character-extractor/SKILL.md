@@ -1,5 +1,6 @@
 ---
 name: novel-01-character-extractor
+displayName: 剧本角色提取
 version: 1.0.0
 description: 从剧本中提取所有角色，生成标准角色风格卡（三行结构），包含不可变特征和可引用ID。当需要提取角色、建立角色库、生成角色描述时使用。
 trigger: "角色提取|提取角色|character extract|角色库|角色风格卡"

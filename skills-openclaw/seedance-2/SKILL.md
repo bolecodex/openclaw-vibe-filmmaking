@@ -1,6 +1,6 @@
 ---
 name: seedance-2
-displayName: 方舟 Seedance2 视频
+displayName: 方舟 Seedance 2 视频
 version: 1.0.0
 description: 使用火山方舟 Ark 官方 API 调用 Seedance 2.0 生成视频。支持文生视频、图生视频、原生音频、多模态参考。当用户提到 seedance 2.0、方舟视频生成、doubao-seedance 时使用此 skill。
 trigger: "seedance 2|seedance2|方舟视频|doubao-seedance|ark视频生成"
@@ -30,6 +30,7 @@ tools: [filesystem]
 > - `ARK_API_KEY` - 火山方舟 API Key（必需）
 > - `ARK_BASE_URL` - API 地址（默认 `https://ark.cn-beijing.volces.com/api/v3`）
 > - `SEEDANCE_MODEL` - 模型名（默认 `doubao-seedance-2-0-pro-260215`）
+> - `SEEDANCE_EP` - 模型单元终端节点（EP），若使用 EP 则在此配置，如 `ep-20260316185750-fhsvb`（可选）
 
 ## 概述
 

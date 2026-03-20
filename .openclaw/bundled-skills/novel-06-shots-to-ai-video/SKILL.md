@@ -1,5 +1,6 @@
 ---
 name: novel-06-shots-to-ai-video
+displayName: 分镜 AI 动画视频
 version: 2.0.0
 description: 将分镜头数据转换为 AI 动画视频。读取 shots/*.yaml 分镜文件，使用 Seedance 2.0 Pro 模型（火山方舟 Ark API）生成视频片段，支持图生视频和文生视频两种模式。当用户想要为分镜生成 AI 视频、制作动画片段、将分镜图片转为动态视频时使用此 skill。
 trigger: "AI视频|动画视频|shots to ai video|分镜视频|Seedance"

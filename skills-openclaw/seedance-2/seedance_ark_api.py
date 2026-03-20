@@ -53,7 +53,9 @@ _load_dotenv()
 
 ARK_API_KEY = os.environ.get('ARK_API_KEY', '')
 ARK_BASE_URL = os.environ.get('ARK_BASE_URL', 'https://ark.cn-beijing.volces.com/api/v3')
-DEFAULT_MODEL = os.environ.get('SEEDANCE_MODEL', 'doubao-seedance-2-0-pro-260215')
+# 若配置了 EP（模型单元），优先使用 EP；否则使用模型名
+SEEDANCE_EP = os.environ.get('SEEDANCE_EP', '')
+DEFAULT_MODEL = SEEDANCE_EP if SEEDANCE_EP else os.environ.get('SEEDANCE_MODEL', 'doubao-seedance-2-0-pro-260215')
 
 
 def _request(method, path, body=None):

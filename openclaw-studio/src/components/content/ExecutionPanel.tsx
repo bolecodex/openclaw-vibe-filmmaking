@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   MessageSquare,
   Brain,
+  Receipt,
 } from "lucide-react";
 import { usePipelineStore, type ExecutionLog } from "../../stores/pipeline-store";
 
@@ -143,6 +144,22 @@ function LogEntry({ log, index }: { log: ExecutionLog; index: number }) {
           <span className="block overflow-x-auto whitespace-pre-wrap break-words text-[12px] leading-relaxed text-red-400">
             {log.content}
           </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (log.type === "usage" && log.usage) {
+    const { input, output } = log.usage;
+    const estimatedRmb =
+      Math.round(((input / 1_000_000) * 1.2 + (output / 1_000_000) * 8) * 100) / 100;
+    const fmt = (n: number) =>
+      n < 1000 ? String(n) : n < 100_000 ? `${(n / 1000).toFixed(1)}k` : `${Math.round(n / 1000)}k`;
+    return (
+      <div className="flex gap-2 rounded-md bg-emerald-500/5 px-2 py-1.5">
+        <Receipt size={12} className="mt-0.5 shrink-0 text-emerald-400" />
+        <div className="min-w-0 flex-1 text-[11px] text-gray-400">
+          本步用量：输入 {fmt(input)}，输出 {fmt(output)}，预估约 ¥{estimatedRmb.toFixed(2)}
         </div>
       </div>
     );

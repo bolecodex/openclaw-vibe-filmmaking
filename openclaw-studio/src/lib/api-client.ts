@@ -233,6 +233,28 @@ export const api = {
       request<any>(`/pipeline/${encodeURIComponent(project)}/test/report/${encodeURIComponent(reportId)}`),
   },
 
+  usage: {
+    get: (project: string) =>
+      request<{
+        totalInput: number;
+        totalOutput: number;
+        estimatedCostRmb: number;
+        pricingDocUrl: string;
+        bySession: Array<{
+          sessionId: string;
+          title?: string;
+          tokenUsage: { input: number; output: number; total: number; context: number };
+          estimatedCostRmb: number;
+        }>;
+      }>(`/usage?project=${encodeURIComponent(project)}`),
+    pricing: () =>
+      request<{
+        inputPerMillionRmb: number;
+        outputPerMillionRmb: number;
+        pricingDocUrl: string;
+      }>("/usage/pricing"),
+  },
+
   gateway: {
     health: () => request<{ ok: boolean }>("/gateway/health"),
     balance: () =>

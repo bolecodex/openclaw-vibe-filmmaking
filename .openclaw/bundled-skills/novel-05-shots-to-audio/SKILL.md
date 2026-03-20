@@ -1,5 +1,6 @@
 ---
 name: novel-05-shots-to-audio
+displayName: 分镜台词配音
 version: 1.0.0
 description: 将分镜头数据转换为配音音频。读取 shots/*.yaml 分镜文件，使用 Minimax TTS 为每条台词生成配音，支持固定角色音色映射。当用户想要为分镜配音、生成台词音频、制作有声内容时使用此 skill。
 trigger: "配音|TTS|语音合成|shots to audio|生成音频"

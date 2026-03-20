@@ -1,5 +1,6 @@
 ---
 name: novel-03-scenes-to-storyboard
+displayName: 场景转分镜稿
 version: 1.0.0
 description: 将已切分的场景文件转换为分镜数据，生成配图提示词和可视化查看器。读取 scenes/*.md 场景文件，在单场景内按时长（3-7秒/镜头）划分镜头，生成配图提示词。当用户需要将场景转换为分镜、生成配图提示词、创建可视化剧本时使用此 skill。
 trigger: "分镜生成|分镜|storyboard|生成分镜|配图提示词"

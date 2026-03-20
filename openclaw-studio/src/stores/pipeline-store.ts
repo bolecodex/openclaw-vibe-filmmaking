@@ -65,6 +65,7 @@ export interface ExecutionLog {
   type: string;
   content?: string;
   toolCall?: { id: string; title: string; status: string; output?: string };
+  usage?: { input: number; output: number; total: number; context: number };
 }
 
 interface PipelineStore {

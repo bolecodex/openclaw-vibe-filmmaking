@@ -141,6 +141,13 @@ router.post("/:project/run", async (req, res) => {
       writePipelineSSE(res, event);
     }
 
+    try {
+      const info = await gateway.getSession(sessionKey);
+      if (info?.tokenUsage && (info.tokenUsage.input > 0 || info.tokenUsage.output > 0)) {
+        writePipelineSSE(res, { type: "usage", usage: info.tokenUsage });
+      }
+    } catch { /* best-effort */ }
+
     const review = runAutoReview(project, stepId);
     writePipelineSSE(res, {
       type: "text",
@@ -282,6 +289,9 @@ function writePipelineSSE(res: any, event: StreamEvent): void {
       break;
     case "error":
       payload.error = event.error;
+      break;
+    case "usage":
+      payload.usage = event.usage;
       break;
     case "done":
       break;

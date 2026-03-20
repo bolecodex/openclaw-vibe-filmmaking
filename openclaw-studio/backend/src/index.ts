@@ -7,6 +7,7 @@ import skillsRouter from "./routes/skills.js";
 import gatewayRouter from "./routes/gateway.js";
 import renderRouter from "./routes/render.js";
 import pipelineRouter from "./routes/pipeline.js";
+import usageRouter from "./routes/usage.js";
 import { getGateway } from "./services/gateway-client.js";
 
 const PORT = parseInt(process.env.PORT || "3001", 10);
@@ -26,6 +27,7 @@ app.use("/api/sessions", sessionsRouter);
 app.use("/api/skills", skillsRouter);
 app.use("/api/render", renderRouter);
 app.use("/api/pipeline", pipelineRouter);
+app.use("/api/usage", usageRouter);
 app.use("/api", gatewayRouter);
 
 getGateway();

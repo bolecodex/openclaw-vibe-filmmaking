@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   Workflow,
+  Receipt,
   Palette,
   Users,
   Film,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { Dashboard } from "../components/content/Dashboard";
 import { PipelineView } from "../components/content/PipelineView";
+import { UsageCostView } from "../components/content/UsageCostView";
 import { StylePanel } from "../components/content/StylePanel";
 import { CharacterView } from "../components/content/CharacterView";
 import { SceneList } from "../components/content/SceneList";
@@ -60,6 +62,15 @@ export const UI_VIEWS: ViewDefinition[] = [
     visible: true,
     component: PipelineView,
     agentHint: "创作流水线管理，可执行步骤、配置参数、查看验收状态",
+  },
+  {
+    id: "usage-cost",
+    label: "用量与费用",
+    icon: Receipt,
+    order: 0.6,
+    visible: true,
+    component: UsageCostView,
+    agentHint: "本项目 Token 用量与预估费用，以火山方舟价格为准",
   },
   {
     id: "style",

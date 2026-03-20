@@ -1,5 +1,6 @@
 ---
 name: novel-02-script-to-scenes
+displayName: 剧本拆场景与对白
 version: 1.0.0
 description: 将剧本原文一步转换为对话脚本 + 场景切分。直接从原文识别说话人、分配音色、断句（5-15字）、切分场景，输出对话脚本、场景索引 YAML 和独立场景文件。当用户需要将剧本转为对话格式、拆分场景、或准备分镜前的完整处理时使用此 skill。
 trigger: "剧本拆分|场景切分|对话脚本|script to scenes|拆分场景"

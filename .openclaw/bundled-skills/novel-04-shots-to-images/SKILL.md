@@ -1,5 +1,6 @@
 ---
 name: novel-04-shots-to-images
+displayName: 分镜镜头配图
 version: 1.0.0
 description: 将分镜头数据转换为 AI 绘画图像。读取 shots/*.yaml 分镜文件，使用 Seedream 4.5 模型进行图生图绘画，保持角色和场景一致性。当用户想要绘制分镜、生成镜头图片、将分镜转为图像时使用此 skill。
 trigger: "绘制分镜|生成图片|shots to images|分镜绘图|AI绘图"

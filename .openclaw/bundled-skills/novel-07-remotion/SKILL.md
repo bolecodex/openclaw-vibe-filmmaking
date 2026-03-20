@@ -1,5 +1,6 @@
 ---
 name: novel-07-remotion
+displayName: Remotion 高清成片
 version: 1.0.0
 description: 使用 Remotion 将分镜头的图片和音频合成为视频。支持镜头间转场（fade/wipe/slide）、Ken Burns 缩放动画、动态字幕叠加。读取 shots/*.yaml 分镜文件，输出高质量 MP4。当用户想要生成视频、合并音视频、制作分镜视频、使用 Remotion 合成视频时使用此 skill。
 trigger: "Remotion|remotion合成|高级视频合成|转场视频|字幕视频"
