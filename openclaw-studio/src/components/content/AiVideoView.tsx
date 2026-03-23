@@ -1,6 +1,6 @@
 import { useShots } from "../../hooks/use-api";
 import { useProjectStore } from "../../stores/project-store";
-import { resolveImageSrc } from "../../lib/asset-resolver";
+import { resolveImageSrc, resolveVideoSrc } from "../../lib/asset-resolver";
 import { FallbackImage } from "../ui/FallbackImage";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
@@ -126,7 +126,8 @@ function ShotVideoCard({
   const imgSrc = resolveImageSrc(project, shot.image_url, shot.image_path, "shots/");
   const videoStatus = shot.video_status ?? "pending";
   const videoMode = shot.video_mode;
-  const hasVideo = videoStatus === "completed" && shot.video_url;
+  const videoSrc = resolveVideoSrc(project, shot.video_url, shot.video_path);
+  const hasVideo = videoStatus === "completed" && !!videoSrc;
   const ModeIcon = videoMode ? MODE_ICON[videoMode] : undefined;
 
   return (
@@ -161,7 +162,7 @@ function ShotVideoCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onPlay(shot.video_url!);
+                onPlay(videoSrc!);
               }}
               className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity group-hover:opacity-100"
             >

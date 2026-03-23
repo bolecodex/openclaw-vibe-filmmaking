@@ -82,6 +82,19 @@ function buildUiInstructions(views?: AvailableView[]): string {
   lines.push("");
   lines.push("示例：用户说\"看看角色\"，你的回复应为：[UI:navigate:characters]好的，以下是项目角色...");
   lines.push("示例：用户说\"查看场景\"，你的回复应为：[UI:navigate:scenes]好的，以下是场景列表...");
+  lines.push("");
+  lines.push("[流水线自动执行 - 重要]");
+  lines.push(
+    "当用户要求重新生成分镜图、分镜视频、配音、角色图等，且你已完成文件修改（如 YAML 中 prompt、image_status 等）后，必须在回复**末尾**单独一行输出以下标记（无其它文字在同一行）。系统会解析并自动调用流水线，用户无需再点「选中出图」「选中生视频」等按钮。",
+  );
+  lines.push("格式：[UI:pipeline:<stepId>:<action>:<分镜或角色ID>[,ID2...]]");
+  lines.push("常用：");
+  lines.push("  - 分镜重新出图：[UI:pipeline:shots-to-images:run-selected:SH_01_002]");
+  lines.push("  - 分镜重新生视频：[UI:pipeline:shots-to-ai-video:run-selected:SH_01_002]");
+  lines.push("  - 分镜重新配音：[UI:pipeline:shots-to-audio:run-selected:SH_01_002]");
+  lines.push("  - 角色肖像重绘：[UI:pipeline:extract-characters:regenerate-one:角色ID]");
+  lines.push("  - 全部失败重试（无 ID）：[UI:pipeline:shots-to-images:retry-failed:] （action 为 retry-failed 时冒号后可为空）");
+  lines.push("规则：多个 ID 用英文逗号分隔；每完成一次「需要触发生成」的操作，在当条回复末尾输出对应一行标记；标记会被界面隐藏，勿在标记行写解释。");
   return lines.join("\n");
 }
 
@@ -117,7 +130,7 @@ export function buildContextPrompt(context?: AgentContext | null): string {
     if (context.focus.characterName) {
       focusInstructions.push(`  → 目标角色: ${context.focus.characterName} (ID: ${context.focus.characterId})`);
       focusInstructions.push(
-        "  → 角色改图说明：当用户要求改变角色图（如「全景图」「镜头拉远」「换图」「改风格」等）时，你只能更新该角色的提示词/描述等配置。界面上的头像不会自动刷新为新图；你必须在回复末尾明确告知用户：请到角色页点击「选中出图」为该角色重新生成肖像图后即可看到新图。",
+        "  → 角色改图：更新该角色 YAML 中的提示词/描述后，在回复末尾输出一行 [UI:pipeline:extract-characters:regenerate-one:角色ID]（使用上文 ID），系统将自动为该角色重新出图，无需用户手动点「选中出图」。",
       );
     }
     if (context.focus.sceneName) {
@@ -126,7 +139,19 @@ export function buildContextPrompt(context?: AgentContext | null): string {
     if (context.focus.shotId) {
       focusInstructions.push(`  → 目标分镜: ${context.focus.shotId}`);
       focusInstructions.push(
-        "  → 分镜重新生成说明：当用户要求「重新生成这个分镜」「重新出图」等时，你应更新该分镜的 prompt 等配置，并将该分镜的 image_status 设为 pending_regenerate。界面上的分镜图不会自动刷新；你必须在回复中明确告知用户：请到分镜图页点击「选中出图」为该分镜重新生成图片后即可看到新图。",
+        "  → 分镜出图/视频/配音：修改该分镜 YAML（如 prompt、image_status、video_status）后，在回复末尾输出一行标记以自动触发生成，无需用户手动点按钮：",
+      );
+      focusInstructions.push(
+        `     出图：[UI:pipeline:shots-to-images:run-selected:${context.focus.shotId}]`,
+      );
+      focusInstructions.push(
+        `     生视频：[UI:pipeline:shots-to-ai-video:run-selected:${context.focus.shotId}]`,
+      );
+      focusInstructions.push(
+        `     配音：[UI:pipeline:shots-to-audio:run-selected:${context.focus.shotId}]`,
+      );
+      focusInstructions.push(
+        "     若用户只要其中一种，只输出对应一行；若同时要图和视频，可分两行输出。",
       );
     }
     focusInstructions.push("严禁操作其他未聚焦的对象。如有歧义，优先使用聚焦对象。");

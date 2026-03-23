@@ -8,7 +8,12 @@ router.get("/", (_req, res) => {
     const skills = sm.scanSkills();
     res.json(skills);
   } catch (err) {
-    res.status(500).json({ error: (err as Error).message });
+    const error = err as Error;
+    console.error("[skills] GET / error:", error);
+    res.status(500).json({
+      error: error.message || "Failed to scan skills",
+      details: process.env.NODE_ENV === "development" ? error.stack : undefined,
+    });
   }
 });
 

@@ -184,7 +184,7 @@ export function ExecutionPanel() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [executionLogs.length]);
+  }, [executionLogs]);
 
   if (!runningStep && executionLogs.length === 0) return null;
 

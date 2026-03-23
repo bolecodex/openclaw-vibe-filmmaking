@@ -6,7 +6,8 @@ import { SkillList } from "../skills/SkillList";
 import { SkillDetail } from "../skills/SkillDetail";
 import { useProjectStore } from "../../stores/project-store";
 import { useSkillsStore } from "../../stores/skills-store";
-import { Wrench, FolderOpen, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Wrench, FolderOpen, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Layers } from "lucide-react";
+import { BatchView } from "../../pages/BatchView";
 
 const SIDEBAR_WIDTH = 224; // w-56
 const SIDEBAR_COLLAPSED = 52;
@@ -67,6 +68,20 @@ export function AppLayout() {
             {!sidebarCollapsed && <span className="truncate">项目</span>}
           </button>
           <button
+            onClick={() => setCurrentView("batch")}
+            className={`flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-xs transition-colors ${
+              sidebarCollapsed ? "py-2.5" : "px-3"
+            } ${
+              currentView === "batch"
+                ? "bg-white/5 text-white"
+                : "text-gray-500 hover:bg-white/[0.03] hover:text-gray-300"
+            }`}
+            title="批量任务"
+          >
+            <Layers size={14} />
+            {!sidebarCollapsed && <span className="truncate">批量</span>}
+          </button>
+          <button
             onClick={() => setCurrentView("skills")}
             className={`flex flex-1 items-center justify-center gap-1.5 px-2 py-2 text-xs transition-colors ${
               sidebarCollapsed ? "py-2.5" : "px-3"
@@ -86,6 +101,10 @@ export function AppLayout() {
           <>
             {currentView === "workspace" ? (
               <FileExplorer />
+            ) : currentView === "batch" ? (
+              <div className="flex flex-1 items-center justify-center p-4 text-center text-xs text-gray-500">
+                在右侧查看与操作批量任务
+              </div>
             ) : (
               <div className="flex-1 overflow-auto">
                 <SkillList />
@@ -99,6 +118,8 @@ export function AppLayout() {
       <div className="flex flex-1 flex-col overflow-hidden">
         {currentView === "workspace" ? (
           <ContentTabs />
+        ) : currentView === "batch" ? (
+          <BatchView />
         ) : selectedSkill ? (
           <SkillDetail name={selectedSkill} />
         ) : (

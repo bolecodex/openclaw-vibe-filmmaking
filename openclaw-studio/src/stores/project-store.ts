@@ -9,7 +9,7 @@ interface FocusedItem {
 interface ProjectStore {
   currentProject: string | null;
   currentTab: TabType;
-  currentView: "workspace" | "skills";
+  currentView: "workspace" | "skills" | "batch";
   selectedFile: string | null;
   expandedDirs: Set<string>;
 
@@ -17,7 +17,7 @@ interface ProjectStore {
 
   setCurrentProject: (name: string | null) => void;
   setCurrentTab: (tab: TabType) => void;
-  setCurrentView: (view: "workspace" | "skills") => void;
+  setCurrentView: (view: "workspace" | "skills" | "batch") => void;
   setSelectedFile: (path: string | null) => void;
   toggleDir: (path: string) => void;
   setFocusedItem: (type: string, id: string) => void;

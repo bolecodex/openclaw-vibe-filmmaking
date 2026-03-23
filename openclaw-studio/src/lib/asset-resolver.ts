@@ -63,3 +63,27 @@ export function resolveAudioSrc(
   }
   return audioUrl || undefined;
 }
+
+/** True if string looks like an absolute web URL (not YAML placeholders like "已写入"). */
+function isHttpUrl(s: string): boolean {
+  const t = s.trim();
+  return t.startsWith("http://") || t.startsWith("https://");
+}
+
+/**
+ * Resolve video playback URL: prefer workspace-relative file (reliable, same-origin),
+ * then a real http(s) remote URL. Ignores non-URL strings often written as log placeholders.
+ */
+export function resolveVideoSrc(
+  project: string,
+  videoUrl?: string,
+  videoPath?: string,
+): string | undefined {
+  const p = videoPath?.trim();
+  if (p) {
+    return fileRawUrl(normalizePath(`${project}/${normalizePath(p)}`));
+  }
+  const u = videoUrl?.trim();
+  if (u && isHttpUrl(u)) return u;
+  return undefined;
+}

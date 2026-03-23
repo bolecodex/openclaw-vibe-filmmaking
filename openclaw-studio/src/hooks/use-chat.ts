@@ -10,6 +10,8 @@ import type {
 import { isValidViewId, FOCUS_TYPE_TO_VIEW, VIEW_MAP } from "../lib/ui-registry";
 import { useProjectStore } from "../stores/project-store";
 import { useChatStore, type TokenUsage } from "../stores/chat-store";
+import { usePipelineStore } from "../stores/pipeline-store";
+import { parseAndStripPipelineDirectives } from "../lib/pipeline-ui-directives";
 
 let msgId = 0;
 
@@ -162,11 +164,50 @@ export function useChat(
             };
           }),
         );
+
+        const projectName = context?.project?.name;
+        const assistantContent =
+          useChatStore.getState().messages.find((m) => m.id === assistantMsg.id)?.content ?? "";
+        const { cleaned, runs } = parseAndStripPipelineDirectives(assistantContent);
+        if (runs.length > 0 || cleaned !== assistantContent) {
+          useChatStore.getState().updateMessages((prev) =>
+            prev.map((m) => (m.id === assistantMsg.id ? { ...m, content: cleaned } : m)),
+          );
+        }
+
         setIsStreaming(false);
         abortRef.current = null;
-        onComplete?.();
-        // 后端/Agent 可能在流结束后才写入分镜图等文件，延迟再拉一次以更新界面
-        if (onComplete) setTimeout(onComplete, 2500);
+
+        const refresh = () => {
+          onComplete?.();
+          setTimeout(() => onComplete?.(), 2500);
+        };
+
+        if (projectName && runs.length > 0) {
+          void (async () => {
+            const { runStep } = usePipelineStore.getState();
+            for (const r of runs) {
+              const needsIds =
+                r.action === "run-selected" ||
+                r.action === "regenerate-one";
+              if (needsIds && r.selectedIds.length === 0) continue;
+              try {
+                await runStep(
+                  projectName,
+                  r.stepId,
+                  r.action,
+                  {},
+                  r.selectedIds.length > 0 ? r.selectedIds : undefined,
+                );
+              } catch {
+                /* runStep 内部已写 executionLogs */
+              }
+            }
+            refresh();
+          })();
+        } else {
+          refresh();
+        }
       }
     },
     [onComplete, onUiAction, setMessages],

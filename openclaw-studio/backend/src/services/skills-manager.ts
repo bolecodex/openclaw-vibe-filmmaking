@@ -1,51 +1,14 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, statSync } from "fs";
 import { join, dirname } from "path";
 import { homedir } from "os";
-import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 
-function resolveOpenclawHome(): string {
-  if (process.env.OPENCLAW_STATE_DIR) return process.env.OPENCLAW_STATE_DIR;
-  const candidates = [
-    join(process.cwd(), ".openclaw"),
-    join(process.cwd(), "..", ".openclaw"),
-    join(process.cwd(), "..", "..", ".openclaw"),
-  ];
-  const local = candidates.find((dir) => existsSync(dir));
-  return local || join(homedir(), ".openclaw");
-}
-
-const OPENCLAW_HOME = resolveOpenclawHome();
-
-/** Repo skills-openclaw: stable even when cwd / OPENCLAW_HOME 不在本仓库。 */
-function resolveProjectSkillsDir(): string | null {
-  const envDir = process.env.SKILLS_OPENCLAW_DIR?.trim();
-  if (envDir && existsSync(envDir)) return envDir;
-
-  const here = dirname(fileURLToPath(import.meta.url));
-  const anchored = [
-    join(here, "..", "..", "..", "..", "skills-openclaw"),
-    join(here, "..", "..", "..", "skills-openclaw"),
-  ];
-  for (const p of anchored) {
-    if (existsSync(p)) return p;
-  }
-
-  let dir = process.cwd();
-  for (let i = 0; i < 12; i++) {
-    const c = join(dir, "skills-openclaw");
-    if (existsSync(c)) return c;
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  return null;
-}
+const OPENCLAW_HOME =
+  process.env.OPENCLAW_STATE_DIR || join(homedir(), ".openclaw");
 
 const WORKSPACE_SKILLS = join(OPENCLAW_HOME, "workspace", "skills");
 const MANAGED_SKILLS = join(OPENCLAW_HOME, "skills");
 const BUNDLED_SKILLS = join(OPENCLAW_HOME, "bundled-skills");
-const PROJECT_SKILLS_DIR = resolveProjectSkillsDir();
 const OPENCLAW_JSON = join(OPENCLAW_HOME, "openclaw.json");
 
 function parseFrontmatter(content: string): { frontmatter: Record<string, unknown>; body: string } {
@@ -83,7 +46,7 @@ function writeOpenclawJson(data: Record<string, unknown>) {
   writeFileSync(OPENCLAW_JSON, JSON.stringify(data, null, 2), "utf-8");
 }
 
-function scanDir(dir: string, source: "workspace" | "managed" | "bundled" | "project"): Array<Record<string, unknown>> {
+function scanDir(dir: string, source: "workspace" | "managed" | "bundled"): Array<Record<string, unknown>> {
   if (!existsSync(dir)) return [];
   const results: Array<Record<string, unknown>> = [];
   for (const name of readdirSync(dir, { withFileTypes: true })) {
@@ -152,25 +115,6 @@ export function scanSkills(): Array<Record<string, unknown>> {
     merged.push(s);
   }
 
-  let project: Array<Record<string, unknown>> = [];
-  if (PROJECT_SKILLS_DIR) {
-    try {
-      project = scanDir(PROJECT_SKILLS_DIR, "project");
-    } catch (e) {
-      console.error(
-        "[skills-manager] scan skills-openclaw failed:",
-        PROJECT_SKILLS_DIR,
-        e,
-      );
-    }
-  }
-  for (const s of project) {
-    const n = s.name as string;
-    if (seen.has(n)) continue;
-    seen.add(n);
-    merged.push(s);
-  }
-
   return merged.sort((a, b) => ((a.name as string) ?? "").localeCompare((b.name as string) ?? ""));
 }
 
@@ -182,10 +126,7 @@ export function getSkill(name: string): Record<string, unknown> | null {
     bundledFm = parseFrontmatter(readFileSync(bundledMd, "utf-8")).frontmatter;
   }
 
-  const skillDirs = [WORKSPACE_SKILLS, MANAGED_SKILLS, BUNDLED_SKILLS];
-  if (PROJECT_SKILLS_DIR) skillDirs.push(PROJECT_SKILLS_DIR);
-
-  for (const dir of skillDirs) {
+  for (const dir of [WORKSPACE_SKILLS, MANAGED_SKILLS, BUNDLED_SKILLS]) {
     const skillPath = join(dir, name);
     const skillMd = join(skillPath, "SKILL.md");
     if (!existsSync(skillMd)) continue;
@@ -200,9 +141,7 @@ export function getSkill(name: string): Record<string, unknown> | null {
 
     let source: string;
     let overridden = false;
-    if (dir === PROJECT_SKILLS_DIR) {
-      source = "project";
-    } else if (isBundled) {
+    if (isBundled) {
       source = "bundled";
       overridden = dir === WORKSPACE_SKILLS;
     } else if (dir === WORKSPACE_SKILLS) {
@@ -337,36 +276,6 @@ export function publishSkill(name: string): void {
     timeout: 60000,
     stdio: "inherit",
   });
-}
-
-/** Relative paths under skill root (SKILL.md + scripts/** + references/**). */
-export function listSkillFileEntries(
-  name: string,
-): { path: string; type: "file" | "dir" }[] | null {
-  const skill = getSkill(name);
-  if (!skill) return null;
-  const root = skill.path as string;
-  const entries: { path: string; type: "file" | "dir" }[] = [];
-  if (existsSync(join(root, "SKILL.md"))) {
-    entries.push({ path: "SKILL.md", type: "file" });
-  }
-  function walkDir(sub: string) {
-    const full = join(root, sub);
-    if (!existsSync(full) || !statSync(full).isDirectory()) return;
-    const stack: { dir: string; prefix: string }[] = [{ dir: full, prefix: sub }];
-    while (stack.length > 0) {
-      const { dir, prefix } = stack.pop()!;
-      for (const n of readdirSync(dir, { withFileTypes: true })) {
-        const fp = join(dir, n.name);
-        const rp = `${prefix}/${n.name}`.replace(/\\/g, "/");
-        if (n.isDirectory()) stack.push({ dir: fp, prefix: rp });
-        else entries.push({ path: rp, type: "file" });
-      }
-    }
-  }
-  walkDir("scripts");
-  walkDir("references");
-  return entries;
 }
 
 export function searchMarketplace(query: string): Array<Record<string, unknown>> {

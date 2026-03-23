@@ -1,16 +1,34 @@
 const BASE = "/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${res.status}: ${text}`);
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      headers: { "Content-Type": "application/json" },
+      ...init,
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      let errorMessage = `HTTP ${res.status}`;
+      if (text) {
+        try {
+          const errorData = JSON.parse(text);
+          errorMessage = errorData.error || errorData.message || text;
+        } catch {
+          errorMessage = text;
+        }
+      }
+      const error = new Error(errorMessage);
+      (error as any).status = res.status;
+      throw error;
+    }
+    if (res.status === 204) return undefined as T;
+    return res.json();
+  } catch (err) {
+    if (err instanceof TypeError && err.message.includes("fetch")) {
+      throw new Error("无法连接到后端服务，请确认后端在 localhost:3001 运行");
+    }
+    throw err;
   }
-  if (res.status === 204) return undefined as T;
-  return res.json();
 }
 
 export const api = {
@@ -260,4 +278,183 @@ export const api = {
     balance: () =>
       request<{ balance: number; balance_yuan: number }>("/account/balance"),
   },
+
+  batch: {
+    createJob: (data: { name: string; inputFolder: string }) =>
+      request<BatchJobSummary>("/batch/jobs", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    listJobs: (limit?: number) =>
+      request<{ jobs: BatchJobSummary[] }>(
+        `/batch/jobs${limit != null ? `?limit=${limit}` : ""}`,
+      ),
+    getJob: (jobId: string) =>
+      request<BatchJobSummary>(`/batch/jobs/${encodeURIComponent(jobId)}`),
+    getTasks: (jobId: string, opts?: { status?: string; limit?: number; offset?: number }) => {
+      const params = new URLSearchParams();
+      if (opts?.status) params.set("status", opts.status);
+      if (opts?.limit != null) params.set("limit", String(opts.limit));
+      if (opts?.offset != null) params.set("offset", String(opts.offset));
+      const qs = params.toString();
+      return request<{ tasks: BatchTask[] }>(
+        `/batch/jobs/${encodeURIComponent(jobId)}/tasks${qs ? `?${qs}` : ""}`,
+      );
+    },
+    startJob: (jobId: string) =>
+      request<{ ok: boolean; enqueued: number }>(
+        `/batch/jobs/${encodeURIComponent(jobId)}/start`,
+        { method: "POST" },
+      ),
+    pauseJob: (jobId: string) =>
+      request<BatchJobSummary>(
+        `/batch/jobs/${encodeURIComponent(jobId)}/pause`,
+        { method: "POST" },
+      ),
+    resumeJob: (jobId: string) =>
+      request<BatchJobSummary>(
+        `/batch/jobs/${encodeURIComponent(jobId)}/resume`,
+        { method: "POST" },
+      ),
+    getTaskContent: (taskId: string) =>
+      request<BatchTaskContent>(`/batch/tasks/${encodeURIComponent(taskId)}/content`),
+    exportJob: (jobId: string, scope?: "videos" | "full") =>
+      request<{ jobId: string; status: string }>(
+        `/batch/jobs/${encodeURIComponent(jobId)}/export`,
+        { method: "POST", body: JSON.stringify({ scope: scope ?? "full" }) },
+      ),
+    exportStatus: (jobId: string) =>
+      request<{ jobId: string; status: string; path?: string; error?: string }>(
+        `/batch/jobs/${encodeURIComponent(jobId)}/export/status`,
+      ),
+    regenerateTaskStep: (taskId: string, stepId: string) =>
+      request<{ ok: boolean; stepId: string }>(
+        `/batch/tasks/${encodeURIComponent(taskId)}/regenerate`,
+        { method: "POST", body: JSON.stringify({ stepId }) },
+      ),
+  },
+
+  interactive: {
+    analyze: (filePath: string) =>
+      request<{
+        analysis: {
+          totalLines: number;
+          totalChars: number;
+          chapters: number;
+          estimatedScenes: number;
+          characterCount: number;
+          dialogueDensity: number;
+          complexity: "simple" | "medium" | "complex";
+          recommendedPipeline: string[];
+          estimatedTime: number;
+          estimatedCost: number;
+          fileName: string;
+        };
+        pipeline: {
+          steps: Array<{
+            id: string;
+            name: string;
+            skill: string | null;
+            order: number;
+            estimatedTime: number;
+            estimatedCost: number;
+          }>;
+          estimatedTime: number;
+          estimatedCost: number;
+        };
+        estimate: {
+          totalTime: number;
+          totalCost: number;
+          breakdown: Array<{ step: string; time: number; cost: number }>;
+        };
+      }>("/interactive/analyze", {
+        method: "POST",
+        body: JSON.stringify({ filePath }),
+      }),
+    start: (projectName: string, novelFilePath: string, pipelineConfig: unknown, autoFix = true) => {
+      const params = new URLSearchParams({
+        projectName,
+        novelFilePath,
+        pipelineConfig: JSON.stringify(pipelineConfig),
+        autoFix: String(autoFix),
+      });
+      return new EventSource(`/api/interactive/start?${params.toString()}`);
+    },
+    progress: (project: string, pipelineConfig: unknown) =>
+      request<{
+        progress: number;
+        currentStep: string | null;
+        completedSteps: string[];
+        totalSteps: number;
+        estimatedRemainingTime: number;
+        elapsedTime: number;
+        estimatedTotalCost: number;
+        actualCost: number;
+      }>(
+        `/interactive/progress/${encodeURIComponent(project)}?pipelineConfig=${encodeURIComponent(JSON.stringify(pipelineConfig))}`,
+      ),
+    fix: (projectName: string, stepId: string, issue?: unknown) =>
+      request<{
+        success: boolean;
+        fixedIssues: string[];
+        failedIssues: string[];
+        message: string;
+      }>("/interactive/fix", {
+        method: "POST",
+        body: JSON.stringify({ projectName, stepId, issue }),
+      }),
+    skip: (projectName: string, stepId: string) =>
+      request<{ success: boolean; message: string }>("/interactive/skip", {
+        method: "POST",
+        body: JSON.stringify({ projectName, stepId }),
+      }),
+    adaptSkill: (adaptation: { baseSkill: string; adaptations: unknown }, variantName?: string) =>
+      request<{ success: boolean; variantId: string; message: string }>("/interactive/adapt-skill", {
+        method: "POST",
+        body: JSON.stringify({ adaptation, variantName }),
+      }),
+  },
 };
+
+export interface BatchJobSummary {
+  id: string;
+  name: string;
+  status: string;
+  inputFolder: string;
+  workspacePath: string;
+  totalTasks: number;
+  completedTasks: number;
+  failedTasks: number;
+  pendingTasks: number;
+  runningTasks: number;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+}
+
+export interface BatchTask {
+  id: string;
+  jobId: string;
+  projectName: string;
+  novelFile: string;
+  status: string;
+  currentStepId: string | null;
+  errorMessage: string | null;
+  progress: number;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+}
+
+export interface BatchTaskContent {
+  projectName: string;
+  projectPath: string;
+  novelFile: string;
+  status: string;
+  progress: number;
+  currentStepId: string | null;
+  scenes: unknown[];
+  shots: unknown[];
+  characters: unknown[];
+  sourceFiles: unknown[];
+}

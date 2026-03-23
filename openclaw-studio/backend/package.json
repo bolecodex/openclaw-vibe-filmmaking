@@ -5,25 +5,32 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc && cp -r src/migrations dist/",
+    "build": "tsc && cp -r src/migrations dist/ 2>/dev/null || true && mkdir -p dist/db && cp -r src/db/migrations dist/db/",
     "start": "node dist/index.js",
+    "worker": "tsx src/workers/start-worker.ts",
+    "worker:prod": "node dist/workers/start-worker.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
+    "better-sqlite3": "^12.8.0",
     "chokidar": "^5.0.0",
     "cors": "^2.8.5",
+    "drizzle-orm": "^0.45.1",
     "express": "^4.21.0",
     "multer": "^2.1.0",
     "ws": "^8.19.0",
     "yaml": "^2.8.2"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.0",
     "@types/express": "^5.0.0",
     "@types/multer": "^2.0.0",
     "@types/node": "^25.3.2",
     "@types/ws": "^8.18.1",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
     "vitest": "^4.0.18"

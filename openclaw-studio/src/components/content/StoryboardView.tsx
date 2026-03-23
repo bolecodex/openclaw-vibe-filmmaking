@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useShots } from "../../hooks/use-api";
 import { useProjectStore } from "../../stores/project-store";
-import { resolveImageSrc } from "../../lib/asset-resolver";
+import { resolveImageSrc, resolveVideoSrc } from "../../lib/asset-resolver";
 import { FallbackImage } from "../ui/FallbackImage";
 import {
   Clapperboard,
@@ -159,7 +159,12 @@ function ShotCard({
   );
   const isPendingRegenerate = shot.image_status === "pending_regenerate";
 
-  const hasVideo = shot.video_status === "completed" && shot.video_url;
+  const videoSrc = resolveVideoSrc(
+    project,
+    shot.video_url,
+    shot.video_path,
+  );
+  const hasVideo = shot.video_status === "completed" && !!videoSrc;
 
   const openLightbox = useCallback(
     (e: React.MouseEvent) => {
@@ -171,10 +176,10 @@ function ShotCard({
         imageUrl: imageSrc,
         shotType: shot.shot_type ?? "",
         sceneName,
-        videoUrl: hasVideo ? shot.video_url : undefined,
+        videoUrl: hasVideo ? videoSrc : undefined,
       });
     },
-    [imageSrc, shot, sceneName, hasVideo, onLightbox],
+    [imageSrc, shot, sceneName, hasVideo, onLightbox, videoSrc],
   );
 
   return (
@@ -216,7 +221,7 @@ function ShotCard({
               <ImageIcon size={24} strokeWidth={1} />
               {isPendingRegenerate && (
                 <span className="max-w-[90%] text-center text-[10px] text-amber-500/90">
-                  先点击本卡片选中，再点上方「选中出图」
+                  可在对话中说「重新出图」自动触发，或选中后点上方「选中出图」
                 </span>
               )}
             </div>

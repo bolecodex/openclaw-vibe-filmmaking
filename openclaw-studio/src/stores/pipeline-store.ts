@@ -68,6 +68,99 @@ export interface ExecutionLog {
   usage?: { input: number; output: number; total: number; context: number };
 }
 
+function streamChunk(parsed: Record<string, unknown>): string {
+  const c = parsed.content;
+  const d = parsed.delta;
+  if (typeof c === "string" && c.length > 0) return c;
+  if (typeof d === "string" && d.length > 0) return d;
+  if (typeof c === "string") return c;
+  if (typeof d === "string") return d;
+  return "";
+}
+
+/**
+ * 将 SSE 流式片段合并为连续日志，避免每个字符单独占一行。
+ */
+function mergeExecutionLogEntry(
+  logs: ExecutionLog[],
+  parsed: Record<string, unknown>,
+): ExecutionLog[] {
+  const t = parsed.type as string;
+  if (!t || t === "done") return logs;
+
+  if (t === "text" || t === "thinking") {
+    const chunk = streamChunk(parsed);
+    if (chunk === "") return logs;
+    const last = logs[logs.length - 1];
+    if (last?.type === t) {
+      const next = [...logs];
+      next[next.length - 1] = {
+        ...last,
+        content: (last.content ?? "") + chunk,
+      };
+      return next;
+    }
+    return [...logs, { type: t, content: chunk }];
+  }
+
+  if (t === "error") {
+    const msg =
+      typeof parsed.error === "string"
+        ? parsed.error
+        : typeof parsed.content === "string"
+          ? parsed.content
+          : "未知错误";
+    return [...logs, { type: "error", content: msg }];
+  }
+
+  if (t === "usage" && parsed.usage && typeof parsed.usage === "object") {
+    return [
+      ...logs,
+      { type: "usage", usage: parsed.usage as ExecutionLog["usage"] },
+    ];
+  }
+
+  if ((t === "tool_start" || t === "tool_update") && parsed.toolCall) {
+    return [
+      ...logs,
+      {
+        type: t,
+        toolCall: parsed.toolCall as NonNullable<ExecutionLog["toolCall"]>,
+      },
+    ];
+  }
+
+  if (t === "tool_output" && parsed.toolCall) {
+    const chunk = streamChunk(parsed);
+    const tc = parsed.toolCall as NonNullable<ExecutionLog["toolCall"]>;
+    for (let i = logs.length - 1; i >= 0; i--) {
+      const e = logs[i];
+      if (
+        (e.type === "tool_start" || e.type === "tool_update") &&
+        e.toolCall?.id === tc.id
+      ) {
+        const next = [...logs];
+        next[i] = {
+          ...e,
+          toolCall: {
+            ...e.toolCall!,
+            output: (e.toolCall!.output ?? "") + chunk,
+          },
+        };
+        return next;
+      }
+    }
+    if (chunk) {
+      return [...logs, { type: "tool_output", content: chunk, toolCall: tc }];
+    }
+    return logs;
+  }
+
+  if (t === "lifecycle") return logs;
+
+  return [...logs, parsed as ExecutionLog];
+}
+
 interface PipelineStore {
   steps: StepState[];
   definitions: StepDefinition[];
@@ -172,7 +265,10 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
             }
 
             set((s) => ({
-              executionLogs: [...s.executionLogs, parsed],
+              executionLogs: mergeExecutionLogEntry(
+                s.executionLogs,
+                parsed as Record<string, unknown>,
+              ),
             }));
           } catch {}
         }
