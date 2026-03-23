@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,initial-scale=1">
+<!--
+  使用说明：浏览器全屏（F11）或窗口约 1920×1080 投屏。
+  材料包入口：同目录 index.html
+-->
+<title>OpenClaw Studio · 业务架构</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700&family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/solution-deck.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-br"></div>
+
+<div class="page">
+
+  <header class="header">
+    <h1>业务架构 · 价值流与能力域</h1>
+    <p class="sub">OpenClaw Studio &ensp;·&ensp; <strong>从 IP 到成片</strong> &ensp;·&ensp; 工业化 AIGC 创作</p>
+  </header>
+
+  <div class="deck-legend">
+    <span><span class="dot" style="background:var(--blue)"></span>内容输入</span>
+    <span><span class="dot" style="background:var(--green)"></span>结构化生产</span>
+    <span><span class="dot" style="background:var(--orange)"></span>资产沉淀</span>
+    <span><span class="dot" style="background:var(--purple)"></span>视听生成</span>
+    <span><span class="dot" style="background:var(--cyan)"></span>交付审阅</span>
+  </div>
+
+  <div class="content">
+
+    <div class="main">
+      <div class="goal-row">
+        <div class="goal-tag">战略</div>
+        <p class="goal-text">
+          以 <span>可复用数字资产</span> 与 <span>可编排流水线</span> 支撑漫剧 / 短剧规模化生产，
+          在统一工作台内完成理解、生成、审阅与交付闭环。
+        </p>
+      </div>
+
+      <div class="stream-title">主价值流</div>
+      <div class="stream">
+        <div class="stream-phase">
+          <div class="phase-badge">01</div>
+          <div class="phase-name">内容输入</div>
+          <div class="phase-out">
+            <div class="out-item">小说 / 剧本 / 设定文档</div>
+            <div class="out-item">IP 世界观与风格约束</div>
+          </div>
+        </div>
+        <div class="stream-phase">
+          <div class="phase-badge">02</div>
+          <div class="phase-name">结构化生产</div>
+          <div class="phase-out">
+            <div class="out-item">场景切分与场景说明</div>
+            <div class="out-item">分镜表与镜头脚本</div>
+          </div>
+        </div>
+        <div class="stream-phase">
+          <div class="phase-badge">03</div>
+          <div class="phase-name">资产沉淀</div>
+          <div class="phase-out">
+            <div class="out-item">角色 / 场景 / 道具标准</div>
+            <div class="out-item">跨镜头可引用资产库</div>
+          </div>
+        </div>
+        <div class="stream-phase">
+          <div class="phase-badge">04</div>
+          <div class="phase-name">视听生成</div>
+          <div class="phase-out">
+            <div class="out-item">分镜静帧 · 对白与旁白</div>
+            <div class="out-item">镜头级动态视频</div>
+          </div>
+        </div>
+        <div class="stream-phase">
+          <div class="phase-badge">05</div>
+          <div class="phase-name">交付审阅</div>
+          <div class="phase-out">
+            <div class="out-item">时间线合成成片</div>
+            <div class="out-item">内审 · 法务 · 发布交接</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cap-row">
+        <div class="cap-box">
+          <h3>内容理解</h3>
+          <ul>
+            <li>剧本结构化与场景边界识别</li>
+            <li>角色关系与台词归属</li>
+          </ul>
+        </div>
+        <div class="cap-box">
+          <h3>资产一致</h3>
+          <ul>
+            <li>风格锚点与角色卡复用</li>
+            <li>镜头级提示词与元数据</li>
+          </ul>
+        </div>
+        <div class="cap-box">
+          <h3>协同编排</h3>
+          <ul>
+            <li>流水线按步执行与重跑</li>
+            <li>对话触发单镜 / 单步迭代</li>
+          </ul>
+        </div>
+        <div class="cap-box">
+          <h3>可追溯</h3>
+          <ul>
+            <li>执行日志与状态可查询</li>
+            <li>项目文件落盘便于审计</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="side-title">干系人视角</div>
+      <div class="role-card">
+        <h4>编导 · 策划</h4>
+        <p>把控叙事节奏与分场逻辑，驱动从文本到分镜的结构化产出。</p>
+      </div>
+      <div class="role-card">
+        <h4>美术 · 分镜</h4>
+        <p>维护视觉一致性与镜头语言，验收静帧与动态预览效果。</p>
+      </div>
+      <div class="role-card">
+        <h4>运营 · 发行</h4>
+        <p>关注成片形态与发布节奏，组织审片与对外物料交接。</p>
+      </div>
+      <div class="role-card">
+        <h4>技术中台</h4>
+        <p>负责环境、模型接入、权限与存储策略，保障平台可持续运营。</p>
+      </div>
+    </aside>
+
+  </div>
+
+  <footer class="footer">
+    OpenClaw Studio 对客材料 · 业务架构
+    <span class="ver">v1.1 · 2026-03</span>
+    · 全屏 1920×1080 · <a href="index.html" style="color:rgba(108,138,255,.55);text-decoration:none">材料包入口</a>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 430" width="720" height="430">
+  <defs>
+    <linearGradient id="bg4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" style="stop-color:#f8fafc"/><stop offset="100%" style="stop-color:#e2e8f0"/></linearGradient>
+    <filter id="sh4"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.07"/></filter>
+  </defs>
+  <rect width="720" height="430" fill="url(#bg4)" rx="12"/>
+  <text x="360" y="34" text-anchor="middle" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif" font-size="14" font-weight="700" fill="#0f172a">技术架构</text>
+  <g font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+    <g filter="url(#sh4)"><rect x="40" y="48" width="640" height="62" rx="10" fill="#eff6ff" stroke="#3b82f6"/>
+      <text x="360" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">体验层 · OpenClaw Studio Web</text>
+      <text x="360" y="96" text-anchor="middle" font-size="10" fill="#475569">项目 · 流水线 · 分镜与图音视预览 · 对话 · 日志</text></g>
+    <text x="360" y="124" text-anchor="middle" font-size="10" fill="#64748b">HTTPS / SSE（可配置）</text>
+    <g stroke-linecap="round">
+      <line x1="360" y1="129" x2="360" y2="136" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+      <polygon points="360,141.5 356.25,136.25 363.75,136.25" fill="#94a3b8" stroke="none"/>
+    </g>
+    <g filter="url(#sh4)"><rect x="40" y="144" width="640" height="62" rx="10" fill="#ecfdf5" stroke="#22c55e"/>
+      <text x="360" y="172" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d">应用与编排服务层</text>
+      <text x="360" y="192" text-anchor="middle" font-size="10" fill="#475569">REST API · 工作区 · 流水线状态 · Prompt 构建</text></g>
+    <text x="360" y="218" text-anchor="middle" font-size="10" fill="#64748b">任务下发与状态</text>
+    <g stroke-linecap="round">
+      <line x1="360" y1="223" x2="360" y2="230" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+      <polygon points="360,235.5 356.25,230.25 363.75,230.25" fill="#94a3b8" stroke="none"/>
+    </g>
+    <g filter="url(#sh4)"><rect x="40" y="238" width="300" height="76" rx="10" fill="#fff7ed" stroke="#f97316" stroke-width="1.5"/>
+      <text x="190" y="266" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">OpenClaw Gateway（龙虾）</text>
+      <text x="190" y="288" text-anchor="middle" font-size="10" fill="#57534e">Agent · 工具路由 · 会话与重试</text></g>
+    <g filter="url(#sh4)"><rect x="380" y="238" width="300" height="76" rx="10" fill="#faf5ff" stroke="#a855f7"/>
+      <text x="530" y="266" text-anchor="middle" font-size="12" font-weight="700" fill="#7c3aed">Skill 技能系统</text>
+      <text x="530" y="288" text-anchor="middle" font-size="10" fill="#57534e">工序封装 · 可扩展定义</text></g>
+    <text x="360" y="328" text-anchor="middle" font-size="10" fill="#64748b">调用模型 · 读写产物</text>
+    <g stroke-linecap="round">
+      <line x1="360" y1="333" x2="360" y2="340" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+      <polygon points="360,345.5 356.25,340.25 363.75,340.25" fill="#94a3b8" stroke="none"/>
+    </g>
+    <g filter="url(#sh4)"><rect x="40" y="348" width="300" height="52" rx="10" fill="#ecfeff" stroke="#06b6d4"/>
+      <text x="190" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#0e7490">多模态模型服务</text>
+      <text x="190" y="390" text-anchor="middle" font-size="9" fill="#57534e">图 · 音 · 视频 · 大模型</text></g>
+    <g filter="url(#sh4)"><rect x="380" y="348" width="300" height="52" rx="10" fill="#fdf4ff" stroke="#d946ef"/>
+      <text x="530" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#a21caf">项目工作区与存储</text>
+      <text x="530" y="390" text-anchor="middle" font-size="9" fill="#57534e">YAML · 媒体 · 成片</text></g>
+  </g>
+</svg>

@@ -103,6 +103,16 @@ flowchart LR
 
 - **[architecture.html](./architecture.html)** — 完整架构说明（分层、API、流水线、数据流、配置）。
 - **[architecture-presentation.html](./architecture-presentation.html)** — 单页架构演示（适合投屏/分享）。
+- **解决方案 / 售前材料** — 门户 **[docs/presentation/index.html](./docs/presentation/index.html)**（业务 / 产品 / 技术 / 集成部署投屏页）；索引 **[docs/对客材料-README.md](./docs/对客材料-README.md)**（议程、链接表与 **SVG 图库内嵌预览**）。
+- **对客矢量图（SVG）** — 说明与全图预览 **[docs/solution-handbook-diagrams/README.md](./docs/solution-handbook-diagrams/README.md)**（与《对客宣讲手册》同源插图，可打包转发）。
+
+### 对客架构图预览（节选）
+
+![技术四层架构（对客示意）](./docs/solution-handbook-diagrams/tech-four-layers.svg)
+
+![产品工作台 Tab 分区](./docs/solution-handbook-diagrams/product-workbench.svg)
+
+*更多业务流、龙虾任务流、Vibe 循环、部署信任域等见 [docs/solution-handbook-diagrams/README.md](./docs/solution-handbook-diagrams/README.md) 与 [docs/对客材料-README.md](./docs/对客材料-README.md)。*
 
 ---
 

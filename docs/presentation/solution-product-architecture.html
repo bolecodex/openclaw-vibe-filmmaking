@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,initial-scale=1">
+<title>OpenClaw Studio · 产品架构</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/solution-deck.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-br"></div>
+
+<div class="page">
+
+  <header class="header">
+    <h1>产品架构 · 功能域与交互形态</h1>
+    <p class="sub">统一工作台 &ensp;·&ensp; <strong>按工种分区</strong> &ensp;·&ensp; 流水线与对话双轨协作</p>
+  </header>
+
+  <div class="deck-legend">
+    <span><span class="dot" style="background:var(--blue)"></span>工作区与项目</span>
+    <span><span class="dot" style="background:var(--purple)"></span>业务功能 Tab</span>
+    <span><span class="dot" style="background:var(--cyan)"></span>编排与协作</span>
+  </div>
+
+  <div class="product-body">
+
+    <div class="product-row">
+      <div class="product-col col-workspace">
+        <h2>工作区</h2>
+        <div class="interact-block" style="margin-bottom:0;flex:1">
+          <h3>项目维度</h3>
+          <p>以「剧目 / 季」为单位组织剧本、场景、分镜与生成资产；支持多项目切换与文件树浏览。</p>
+        </div>
+        <div class="interact-block" style="margin-top:10px;margin-bottom:0">
+          <h3>技能与模板</h3>
+          <p>左侧可查看已挂载技能说明，便于制片与技术人员对齐标准步骤。</p>
+        </div>
+      </div>
+
+      <div class="product-col col-modules">
+        <h2>功能域（主界面 Tab）</h2>
+        <div class="module-grid">
+          <div class="mod-cell">概览</div>
+          <div class="mod-cell">流水线</div>
+          <div class="mod-cell">风格</div>
+          <div class="mod-cell">角色</div>
+          <div class="mod-cell">场景</div>
+          <div class="mod-cell">道具</div>
+          <div class="mod-cell accent">分镜图</div>
+          <div class="mod-cell accent">音频</div>
+          <div class="mod-cell accent">视频</div>
+          <div class="mod-cell accent">剪辑</div>
+        </div>
+        <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:10px;letter-spacing:.06em">
+          说明：概览与流水线负责总控；风格 / 角色 / 场景 / 道具支撑资产一致；分镜图 / 音频 / 视频 / 剪辑负责镜头级产出与合成验收。
+        </p>
+      </div>
+
+      <div class="product-col col-interact">
+        <h2>交互形态</h2>
+        <div class="interact-block">
+          <h3>流水线控制台</h3>
+          <p>按标准步骤触发「剧本→场景→角色→分镜→出图→配音→视频→合成」等工序，支持步骤级状态查看与重试。</p>
+        </div>
+        <div class="interact-block">
+          <h3>对话协作</h3>
+          <p>自然语言触发单步或指定镜头任务，适配编导口头协调习惯；与流水线共用同一项目上下文。</p>
+        </div>
+        <div class="interact-block" style="margin-bottom:0">
+          <h3>执行日志</h3>
+          <p>展示当前/历史任务输出与异常信息，满足制片「可追问、可验收」的管理诉求。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="journey-bar">
+      <span class="j-label">典型旅程</span>
+      <div class="journey-steps">
+        <div class="j-step">创建项目</div>
+        <div class="j-step">导入文本</div>
+        <div class="j-step">执行流水线</div>
+        <div class="j-step">分 Tab 审阅</div>
+        <div class="j-step">单步重跑</div>
+        <div class="j-step">合成导出</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    OpenClaw Studio 对客材料 · 产品架构
+    <span class="ver">v1.1 · 2026-03</span>
+    · 全屏 1920×1080 · <a href="index.html" style="color:rgba(108,138,255,.55);text-decoration:none">材料包入口</a>
+  </footer>
+
+</div>
+</body>
+</html>

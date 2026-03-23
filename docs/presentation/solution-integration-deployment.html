@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,initial-scale=1">
+<title>OpenClaw Studio · 集成与部署</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/solution-deck.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-br"></div>
+
+<div class="page">
+
+  <header class="header">
+    <h1>集成与部署架构 · 信任边界与落地拓扑</h1>
+    <p class="sub">OpenClaw 双核运行于客户信任域 &ensp;·&ensp; <strong>模型外联可审计</strong> &ensp;·&ensp; 支撑 Vibe 迭代式制片</p>
+  </header>
+
+  <div class="deck-legend">
+    <span><span class="dot" style="background:var(--blue)"></span>用户终端域</span>
+    <span><span class="dot" style="background:var(--green)"></span>应用与智能体域（龙虾核心）</span>
+    <span><span class="dot" style="background:var(--orange)"></span>外部模型与存储</span>
+  </div>
+
+  <div class="deploy-wrap">
+
+    <div class="openclaw-narrative">
+      <div class="ocn-title">OPENCLAW（龙虾）在方案中的角色 · 与 VIBE FILMMAKING 价值</div>
+      <div class="ocn-grid">
+        <div class="ocn-col">
+          <h4>龙虾双核：Studio + Gateway</h4>
+          <p>
+            <strong>OpenClaw Studio</strong>面向人：项目、分镜、审片、日志，全在浏览器工作台完成。
+            <strong>OpenClaw Gateway</strong>面向机：承载 Agent 运行时，按预置 <strong>Skill</strong> 把「切场景、出图、配音、视频、合成」等步骤变成可重复、可编排的调用链，并经 MCP / HTTP 访问多模态 API。
+            业内口语中的<strong>「龙虾」</strong>即指这一整套 OpenClaw 运行时与编排能力；与本方案中的制片工作台<strong>成套交付、同域部署</strong>，数据与任务不散落在无审计的聊天窗口。
+          </p>
+        </div>
+        <div class="ocn-col">
+          <h4>Vibe Filmmaking（氛围驱动制片）</h4>
+          <p>
+            强调先锁定<strong>整体气质、节奏与情绪（vibe）</strong>，再迭代镜头与音画，而非一开始就钉死每一帧细节。
+            本方案的价值在于：同一工作区内<strong>可重跑单步、资产（角色/场景）可复用、对话可触发局部重生成</strong>，使「试 vibe → 收敛风格 → 批量延展镜头 → 合成交付」形成闭环；
+            OpenClaw 负责<strong>把创意意图稳定翻译成对模型的连续、可追溯调用</strong>，降低从灵感到可播成片之间的摩擦与返工成本。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="deploy-zones">
+      <div class="zone user">
+        <div class="zone-title">用户终端域</div>
+        <div class="zone-body">
+          <div class="zone-box">
+            <h3>浏览器客户端</h3>
+            <ul>
+              <li>HTTPS 访问 Studio 前端，操作项目与流水线</li>
+              <li>默认不在浏览器持久化剧本与成片，降低终端泄露面</li>
+              <li>企业 SSO 可按项目集成</li>
+            </ul>
+          </div>
+          <div class="zone-box">
+            <h3>体验与 Vibe 迭代入口</h3>
+            <ul>
+              <li>分镜 / 音视频 Tab 即时预览，快速对齐「气质」</li>
+              <li>对话与流水线共用同一项目上下文，避免口径分裂</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="deploy-connector" aria-hidden="true">›</div>
+
+      <div class="zone dmz">
+        <div class="zone-title">应用与智能体部署域</div>
+        <div class="zone-body">
+          <div class="zone-box">
+            <h3>OpenClaw Studio 应用</h3>
+            <ul>
+              <li>前端静态资源 + 后端 API（可同机或水平扩展）</li>
+              <li>读写项目工作区目录或挂载卷，落盘 YAML / 媒体</li>
+              <li>与 Gateway 内网互通（地址与鉴权可配置）</li>
+            </ul>
+          </div>
+          <div class="zone-box">
+            <h3>OpenClaw Gateway（龙虾运行时）</h3>
+            <ul>
+              <li>Agent 推理、工具调用、Skill 路由与会话状态</li>
+              <li>将制片步骤拆解为可观测、可重试的任务单元</li>
+              <li>建议与 Studio 后端处于同一信任网络</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="deploy-connector" aria-hidden="true">›</div>
+
+      <div class="zone ext">
+        <div class="zone-title">外部服务域</div>
+        <div class="zone-body">
+          <div class="zone-box">
+            <h3>多模态模型 API</h3>
+            <ul>
+              <li>图像 / 语音 / 视频 / 大语言模型，按合同与合规选型</li>
+              <li>公网 TLS、专线或私有化推理集群均可对接</li>
+              <li>密钥、配额与账单归属客户账号体系</li>
+            </ul>
+          </div>
+          <div class="zone-box">
+            <h3>对象存储与备份（可选）</h3>
+            <ul>
+              <li>工作区可落本地盘、NAS 或 S3 兼容存储</li>
+              <li>支持异地备份与多环境同步策略</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="deploy-note">
+      <strong style="color:rgba(255,255,255,.65)">部署策略摘要：</strong>
+      典型路径为「终端 → 客户机房内 <strong>Studio + Gateway（龙虾）</strong> → 受控出网访问已审批模型端点」；
+      亦可混合云：计算与数据在客户 VPC，推理走托管 API。端口、高可用与容灾按客户安全基线单独出具详细设计（DD）。
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    OpenClaw Studio 对客材料 · 集成与部署
+    <span class="ver">v1.1 · 2026-03</span>
+    · 全屏 1920×1080 · <a href="index.html" style="color:rgba(108,138,255,.55);text-decoration:none">材料包入口</a>
+  </footer>
+
+</div>
+</body>
+</html>

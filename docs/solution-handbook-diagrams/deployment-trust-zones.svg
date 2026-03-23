@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 288" width="960" height="288">
+  <defs><filter id="sh5"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.06"/></filter></defs>
+  <rect width="960" height="288" fill="#f8fafc" rx="12"/>
+  <text x="480" y="30" text-anchor="middle" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif" font-size="14" font-weight="700" fill="#0f172a">集成与部署：三类信任域</text>
+  <g font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+    <g filter="url(#sh5)"><rect x="20" y="44" width="290" height="224" rx="12" fill="#eff6ff" stroke="#3b82f6" stroke-dasharray="6 4"/>
+      <text x="165" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af">用户终端域</text>
+      <rect x="40" y="84" width="250" height="68" rx="8" fill="#fff" stroke="#bfdbfe"/>
+      <text x="165" y="108" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">浏览器</text>
+      <text x="165" y="128" text-anchor="middle" font-size="10" fill="#64748b">HTTPS 访问 Studio</text>
+      <text x="165" y="142" text-anchor="middle" font-size="10" fill="#64748b">默认不在浏览器持久化成片</text>
+      <rect x="40" y="162" width="250" height="94" rx="8" fill="#fff" stroke="#bfdbfe"/>
+      <text x="165" y="186" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a8a">体验与 Vibe 迭代</text>
+      <text x="165" y="208" text-anchor="middle" font-size="10" fill="#64748b">预览 · 对话 · 流水线入口</text></g>
+    <text x="328" y="164" font-size="22" fill="#cbd5e1">›</text>
+    <g filter="url(#sh5)"><rect x="350" y="44" width="290" height="224" rx="12" fill="#ecfdf5" stroke="#22c55e" stroke-dasharray="6 4"/>
+      <text x="495" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#15803d">应用与智能体域</text>
+      <text x="495" y="88" text-anchor="middle" font-size="9" fill="#059669">龙虾核心部署区</text>
+      <rect x="370" y="96" width="250" height="76" rx="8" fill="#fff" stroke="#86efac"/>
+      <text x="495" y="122" text-anchor="middle" font-size="11" font-weight="600" fill="#166534">OpenClaw Studio</text>
+      <text x="495" y="142" text-anchor="middle" font-size="10" fill="#64748b">前后端 · 读写工作区</text>
+      <text x="495" y="158" text-anchor="middle" font-size="10" fill="#64748b">与 Gateway 内网互通</text>
+      <rect x="370" y="180" width="250" height="76" rx="8" fill="#fff" stroke="#86efac"/>
+      <text x="495" y="206" text-anchor="middle" font-size="11" font-weight="600" fill="#166534">OpenClaw Gateway</text>
+      <text x="495" y="226" text-anchor="middle" font-size="10" fill="#64748b">Agent · Skill · MCP/HTTP</text></g>
+    <text x="658" y="164" font-size="22" fill="#cbd5e1">›</text>
+    <g filter="url(#sh5)"><rect x="680" y="44" width="260" height="224" rx="12" fill="#fff7ed" stroke="#f97316" stroke-dasharray="6 4"/>
+      <text x="810" y="72" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">外部服务域</text>
+      <rect x="700" y="84" width="220" height="76" rx="8" fill="#fff" stroke="#fdba74"/>
+      <text x="810" y="108" text-anchor="middle" font-size="11" font-weight="600" fill="#9a3412">多模态模型 API</text>
+      <text x="810" y="128" text-anchor="middle" font-size="10" fill="#64748b">TLS / 专线 / 私有化推理</text>
+      <text x="810" y="144" text-anchor="middle" font-size="10" fill="#64748b">密钥归贵司账号</text>
+      <rect x="700" y="170" width="220" height="86" rx="8" fill="#fff" stroke="#fdba74"/>
+      <text x="810" y="194" text-anchor="middle" font-size="11" font-weight="600" fill="#9a3412">对象存储（可选）</text>
+      <text x="810" y="214" text-anchor="middle" font-size="10" fill="#64748b">本地盘 · NAS · S3 兼容</text></g>
+  </g>
+</svg>

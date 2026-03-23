@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,initial-scale=1">
+<title>OpenClaw Studio · 技术架构</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/solution-deck.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-br"></div>
+
+<div class="page">
+
+  <header class="header">
+    <h1>技术架构 · 分层与集成（对客版）</h1>
+    <p class="sub"><strong>Studio 对人 · Gateway（龙虾）对机</strong> &ensp;·&ensp; Skill 编排多模态调用 &ensp;·&ensp; 不绑定单一模型厂商</p>
+  </header>
+
+  <div class="deck-legend">
+    <span><span class="dot" style="background:var(--blue)"></span>体验层</span>
+    <span><span class="dot" style="background:var(--green)"></span>应用与编排</span>
+    <span><span class="dot" style="background:var(--orange)"></span>智能体与技能</span>
+    <span><span class="dot" style="background:var(--cyan)"></span>模型与数据</span>
+  </div>
+
+  <div class="content">
+    <div class="tech-stack">
+
+      <div class="tech-layer">
+        <div class="tech-layer-tag">体验</div>
+        <div class="tech-card layer-ui">
+          <h2>OpenClaw Studio Web 工作台</h2>
+          <div class="pills">
+            <span class="pill">SPA 前端</span>
+            <span class="pill">HTTPS</span>
+            <span class="pill">项目管理与预览</span>
+            <span class="pill">流水线与对话 UI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-gap ab"><div class="line"><div class="dot"></div></div></div>
+
+      <div class="tech-layer">
+        <div class="tech-layer-tag">编排</div>
+        <div class="tech-card layer-api">
+          <h2>应用与编排服务</h2>
+          <div class="pills">
+            <span class="pill">REST API</span>
+            <span class="pill">SSE 实时流</span>
+            <span class="pill">工作区与文件访问</span>
+            <span class="pill">流水线状态机</span>
+            <span class="pill">Prompt 与上下文构建</span>
+            <span class="pill">渲染与合成接口</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-gap ag"><div class="line"><div class="dot"></div></div></div>
+
+      <div class="tech-layer">
+        <div class="tech-layer-tag">智能</div>
+        <div class="dual-row" style="flex:1;min-height:0">
+          <div class="gw-highlight">
+            <div class="gw-highlight-inner">
+              <h2><span class="badge-core">核心</span>OpenClaw Gateway（龙虾运行时）</h2>
+              <div class="pills">
+                <span class="pill">Agent 运行时</span>
+                <span class="pill">Skill 编排与重试</span>
+                <span class="pill">MCP / HTTP 工具</span>
+                <span class="pill">会话与路由</span>
+                <span class="pill">WebSocket（可配置）</span>
+              </div>
+            </div>
+          </div>
+          <div class="tech-card skill-skill" style="flex:1 1 0;min-width:0">
+            <h2>Skill 技能系统</h2>
+            <div class="pills">
+              <span class="pill">流水线步骤封装</span>
+              <span class="pill">YAML / Markdown 定义</span>
+              <span class="pill">可扩展技能目录</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-gap ao"><div class="line"><div class="dot"></div></div></div>
+
+      <div class="tech-layer">
+        <div class="tech-layer-tag">能力</div>
+        <div class="split-layer">
+          <div class="tech-card layer-model">
+            <h2>多模态模型服务</h2>
+            <div class="pills">
+              <span class="pill">图像生成</span>
+              <span class="pill">语音合成 TTS</span>
+              <span class="pill">视频生成</span>
+              <span class="pill">大语言模型</span>
+              <span class="pill">对象存储 / 图床（可选）</span>
+            </div>
+            <p style="font-size:11px;color:rgba(255,255,255,.4);margin-top:10px">具体厂商与账号由客户侧配置；平台负责编排与审计落盘。</p>
+          </div>
+          <div class="tech-card layer-data">
+            <h2>项目数据与媒体存储</h2>
+            <div class="pills">
+              <span class="pill">场景与分镜 YAML</span>
+              <span class="pill">Markdown 文档</span>
+              <span class="pill">图片 / 音频 / 视频产物</span>
+              <span class="pill">可对接对象存储或 NAS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <aside class="pipe-sidebar">
+      <div class="pipe-title">业务流水线</div>
+      <div class="pipeline">
+        <div class="pipe-track"></div>
+        <div class="pipe-step"><span class="num">1</span><span class="label">文本输入</span></div>
+        <div class="pipe-step"><span class="num">2</span><span class="label">剧本分场</span></div>
+        <div class="pipe-step"><span class="num">3</span><span class="label">角色提取</span></div>
+        <div class="pipe-step"><span class="num">4</span><span class="label">场景分镜</span></div>
+        <div class="pipe-step"><span class="num">5</span><span class="label">分镜出图</span></div>
+        <div class="pipe-step"><span class="num">6</span><span class="label">分镜配音</span></div>
+        <div class="pipe-step"><span class="num">7</span><span class="label">AI 视频</span></div>
+        <div class="pipe-step"><span class="num">8</span><span class="label">合成成片</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    OpenClaw Studio 对客材料 · 技术架构
+    <span class="ver">v1.1 · 2026-03</span>
+    · 端口与部署细节见研发文档 · <a href="index.html" style="color:rgba(108,138,255,.55);text-decoration:none">材料包入口</a>
+  </footer>
+
+</div>
+</body>
+</html>

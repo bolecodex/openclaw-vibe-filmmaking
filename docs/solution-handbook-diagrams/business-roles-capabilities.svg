@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="920" height="300">
+  <defs><linearGradient id="bg2" x1="0%" y1="0%" x2="0%" y2="100%">
+    <stop offset="0%" style="stop-color:#f8fafc"/><stop offset="100%" style="stop-color:#f1f5f9"/></linearGradient>
+    <filter id="sh2"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.07"/></filter></defs>
+  <rect width="920" height="300" fill="url(#bg2)" rx="12"/>
+  <text x="460" y="34" text-anchor="middle" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif" font-size="14" font-weight="700" fill="#0f172a">干系人与能力域（可按岗位分工）</text>
+  <g font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif" font-size="12">
+    <g filter="url(#sh2)"><rect x="40" y="52" width="190" height="52" rx="8" fill="#eff6ff" stroke="#93c5fd"/>
+      <text x="135" y="82" text-anchor="middle" font-weight="700" fill="#1d4ed8">编导 · 策划</text></g>
+    <g filter="url(#sh2)"><rect x="250" y="52" width="190" height="52" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+      <text x="345" y="82" text-anchor="middle" font-weight="700" fill="#047857">美术 · 分镜</text></g>
+    <g filter="url(#sh2)"><rect x="460" y="52" width="190" height="52" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+      <text x="555" y="82" text-anchor="middle" font-weight="700" fill="#c2410c">运营 · 发行</text></g>
+    <g filter="url(#sh2)"><rect x="670" y="52" width="210" height="52" rx="8" fill="#faf5ff" stroke="#d8b4fe"/>
+      <text x="775" y="82" text-anchor="middle" font-weight="700" fill="#7c3aed">技术中台</text></g>
+    <g filter="url(#sh2)"><rect x="60" y="128" width="800" height="152" rx="10" fill="#fff" stroke="#e2e8f0"/>
+      <text x="460" y="158" text-anchor="middle" font-weight="700" fill="#334155">平台统一承载的业务能力</text>
+      <text x="90" y="190" font-size="11" fill="#475569">· 内容理解与切分（剧本到场景、分镜）</text>
+      <text x="90" y="214" font-size="11" fill="#475569">· 资产库与一致性（角色 / 场景 / 道具可引用）</text>
+      <text x="90" y="238" font-size="11" fill="#475569">· 视听生成与预览（图 / 音 / 视频按镜头）</text>
+      <text x="480" y="190" font-size="11" fill="#475569">· 合成导出与成片交接</text>
+      <text x="480" y="214" font-size="11" fill="#475569">· 流水线执行日志与单步重跑</text>
+      <text x="480" y="238" font-size="11" fill="#475569">· 对话协作与同一项目上下文</text></g>
+  </g>
+</svg>

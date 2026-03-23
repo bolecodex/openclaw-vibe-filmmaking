@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 200" width="1040" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f1f5f9"/><stop offset="100%" style="stop-color:#e2e8f0"/>
+    </linearGradient>
+    <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/></filter>
+  </defs>
+  <rect width="1040" height="200" fill="url(#bg)" rx="12"/>
+  <text x="520" y="36" text-anchor="middle" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif" font-size="15" font-weight="700" fill="#0f172a">业务价值流：从 IP 到成片</text>
+  <g font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+    <g filter="url(#sh)"><rect x="24" y="64" width="168" height="108" rx="10" fill="#fff" stroke="#cbd5e1"/>
+      <text x="108" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">内容输入</text>
+      <text x="108" y="124" text-anchor="middle" font-size="11" fill="#475569">IP · 剧本 · 设定</text></g>
+    <text x="210" y="122" font-size="20" fill="#94a3b8">→</text>
+    <g filter="url(#sh)"><rect x="232" y="64" width="168" height="108" rx="10" fill="#fff" stroke="#cbd5e1"/>
+      <text x="316" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">结构化生产</text>
+      <text x="316" y="124" text-anchor="middle" font-size="11" fill="#475569">场景 · 分镜脚本</text></g>
+    <text x="418" y="122" font-size="20" fill="#94a3b8">→</text>
+    <g filter="url(#sh)"><rect x="440" y="64" width="168" height="108" rx="10" fill="#fff" stroke="#cbd5e1"/>
+      <text x="524" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#b45309">数字资产</text>
+      <text x="524" y="124" text-anchor="middle" font-size="11" fill="#475569">角色 · 场景 · 道具</text></g>
+    <text x="626" y="122" font-size="20" fill="#94a3b8">→</text>
+    <g filter="url(#sh)"><rect x="648" y="64" width="168" height="108" rx="10" fill="#fff" stroke="#cbd5e1"/>
+      <text x="732" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#6d28d9">视听产出</text>
+      <text x="732" y="124" text-anchor="middle" font-size="11" fill="#475569">图 · 音 · 视频镜头</text></g>
+    <text x="834" y="122" font-size="20" fill="#94a3b8">→</text>
+    <g filter="url(#sh)"><rect x="856" y="64" width="160" height="108" rx="10" fill="#fff" stroke="#cbd5e1"/>
+      <text x="936" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#0e7490">交付审阅</text>
+      <text x="936" y="124" text-anchor="middle" font-size="11" fill="#475569">合成 · 内审 · 发布</text></g>
+  </g>
+</svg>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 200" width="640" height="200">
+  <rect width="640" height="200" fill="#faf5ff" rx="12"/>
+  <text x="320" y="32" text-anchor="middle" font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif" font-size="14" font-weight="700" fill="#5b21b6">Vibe Filmmaking：先氛围，再细节</text>
+  <g font-family="system-ui,PingFang SC,Microsoft YaHei,sans-serif">
+    <ellipse cx="120" cy="110" rx="88" ry="44" fill="#fff" stroke="#c084fc" stroke-width="2"/>
+    <text x="120" y="108" text-anchor="middle" font-size="11" font-weight="700" fill="#6b21a8">对齐 vibe</text>
+    <text x="120" y="124" text-anchor="middle" font-size="9" fill="#64748b">气质·节奏·情绪</text>
+    <text x="210" y="118" font-size="18" fill="#a78bfa">→</text>
+    <ellipse cx="320" cy="110" rx="88" ry="44" fill="#fff" stroke="#c084fc" stroke-width="2"/>
+    <text x="320" y="108" text-anchor="middle" font-size="11" font-weight="700" fill="#6b21a8">试镜头与音画</text>
+    <text x="320" y="124" text-anchor="middle" font-size="9" fill="#64748b">单步/单镜重跑</text>
+    <text x="410" y="118" font-size="18" fill="#a78bfa">→</text>
+    <ellipse cx="520" cy="110" rx="88" ry="44" fill="#fff" stroke="#c084fc" stroke-width="2"/>
+    <text x="520" y="108" text-anchor="middle" font-size="11" font-weight="700" fill="#6b21a8">收敛并交付</text>
+    <text x="520" y="124" text-anchor="middle" font-size="9" fill="#64748b">资产继承·合成</text>
+  </g>
+</svg>

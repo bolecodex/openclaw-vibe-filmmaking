@@ -19,4 +19,17 @@ dist/
 *.mov
 *.webm
 *.pyc
+
+# docs/ 默认忽略；以下对客材料与投屏包纳入版本库（转发客户 / README 内嵌 SVG 需可追踪）
 docs/*
+!docs/presentation/
+!docs/presentation/**
+!docs/solution-handbook-diagrams/
+!docs/solution-handbook-diagrams/**
+!docs/对客材料-README.md
+!docs/解决方案架构师-对客宣讲手册.md
+!docs/客户项目介绍-OpenClaw-Studio.md
+!docs/100分钟S级短剧费用测算.md
+
+# macOS metadata inside now-tracked docs subtrees (negation rules above would re-include)
+docs/**/.DS_Store
