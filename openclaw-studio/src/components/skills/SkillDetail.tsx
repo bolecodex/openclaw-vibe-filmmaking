@@ -51,8 +51,11 @@ export function SkillDetail({ name }: SkillDetailProps) {
   const isBundled = skill.source === "bundled";
   const isProject = skill.source === "project";
   const canDelete = !isBundled && !isProject;
-  const canReset = isBundled && skill.overridden;
-  const canEdit = !isProject;
+  const canReset = Boolean(
+    skill.overridden && (isBundled || isProject),
+  );
+  /** 仓库内技能编辑会写入 ~/.openclaw/workspace/skills 覆盖层 */
+  const canEdit = true;
 
   const tabs: Array<{ id: DetailTab; label: string }> = [
     { id: "readme", label: "说明" },
@@ -93,7 +96,14 @@ export function SkillDetail({ name }: SkillDetailProps) {
   };
 
   const handleReset = async () => {
-    if (!confirm("确定要重置为系统默认版本？你的修改将被丢弃。")) return;
+    if (
+      !confirm(
+        isProject
+          ? "确定要重置为仓库内默认版本？工作区覆盖将被删除。"
+          : "确定要重置为系统默认版本？你的修改将被丢弃。",
+      )
+    )
+      return;
     setResetting(true);
     try {
       await api.skills.reset(name);
@@ -117,7 +127,7 @@ export function SkillDetail({ name }: SkillDetailProps) {
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 border-b border-white/5 p-4">
-        {isBundled && skill.pipelineStep && (
+        {(isBundled || isProject) && skill.pipelineStep && (
           <div className="mb-2 flex items-center gap-2">
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-300">
               {skill.pipelineStep}

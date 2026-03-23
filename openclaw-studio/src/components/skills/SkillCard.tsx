@@ -30,8 +30,9 @@ const SOURCE_BADGE: Record<
     className: "bg-emerald-500/20 text-emerald-300",
   },
   project: {
-    label: "项目",
+    label: "仓库",
     className: "bg-amber-500/20 text-amber-300",
+    modifiedLabel: "仓库 · 已修改",
   },
 };
 
@@ -48,7 +49,11 @@ export function SkillCard({
 }: SkillCardProps) {
   const badge = SOURCE_BADGE[source] ?? SOURCE_BADGE.workspace;
   const badgeLabel =
-    source === "bundled" && overridden ? badge.modifiedLabel : badge.label;
+    overridden &&
+    (source === "bundled" || source === "project") &&
+    badge.modifiedLabel
+      ? badge.modifiedLabel
+      : badge.label;
 
   return (
     <button

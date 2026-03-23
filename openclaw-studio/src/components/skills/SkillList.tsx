@@ -24,10 +24,7 @@ function filterSkills(skills: Skill[], tab: SkillTab, query: string): Skill[] {
     );
   } else if (tab === "installed") {
     filtered = skills.filter(
-      (s) =>
-        s.source === "workspace" ||
-        s.source === "managed" ||
-        s.source === "project",
+      (s) => s.source === "workspace" || s.source === "managed",
     );
   }
   if (query.trim()) {
@@ -178,10 +175,11 @@ export function SkillList() {
         )}
         {!error && !isLoading && skills.length === 0 && (
           <p className="mb-3 text-center text-[11px] text-gray-500">
-            未发现任何 Skill。可设置环境变量{" "}
+            未发现任何 Skill。开发模式下会自动读取仓库{" "}
+            <code className="text-gray-400">skills-openclaw/</code>；亦可设置{" "}
             <code className="text-gray-400">SKILLS_OPENCLAW_DIR</code>{" "}
-            指向技能目录，或将技能放入{" "}
-            <code className="text-gray-400">.openclaw/bundled-skills</code>。
+            或运行 <code className="text-gray-400">scripts/deploy-skills.sh</code>{" "}
+            同步到 <code className="text-gray-400">~/.openclaw/bundled-skills</code>。
           </p>
         )}
         {activeTab === "marketplace" ? (

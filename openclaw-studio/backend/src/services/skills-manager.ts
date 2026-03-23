@@ -1,7 +1,17 @@
-import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, statSync } from "fs";
-import { join, dirname } from "path";
+import {
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  rmSync,
+  existsSync,
+  statSync,
+  type Dirent,
+} from "fs";
+import { join, dirname, normalize } from "path";
 import { homedir } from "os";
 import { execSync } from "child_process";
+import { fileURLToPath } from "url";
 
 const OPENCLAW_HOME =
   process.env.OPENCLAW_STATE_DIR || join(homedir(), ".openclaw");
@@ -10,6 +20,33 @@ const WORKSPACE_SKILLS = join(OPENCLAW_HOME, "workspace", "skills");
 const MANAGED_SKILLS = join(OPENCLAW_HOME, "skills");
 const BUNDLED_SKILLS = join(OPENCLAW_HOME, "bundled-skills");
 const OPENCLAW_JSON = join(OPENCLAW_HOME, "openclaw.json");
+
+/** 仓库内 skills-openclaw（开发时无需先 deploy 到 ~/.openclaw） */
+function resolveProjectSkillsDir(): string | null {
+  const envDir = process.env.SKILLS_OPENCLAW_DIR?.trim();
+  if (envDir) {
+    const p = normalize(envDir);
+    if (existsSync(p)) return p;
+    console.warn("[skills] SKILLS_OPENCLAW_DIR set but path does not exist:", p);
+  }
+  const here = dirname(fileURLToPath(import.meta.url));
+  // backend/src/services -> ../../../.. = monorepo 根目录（与 openclaw-studio 并列的 skills-openclaw）
+  const repoRoot = join(here, "..", "..", "..", "..");
+  const candidate = join(repoRoot, "skills-openclaw");
+  if (existsSync(candidate)) return candidate;
+  return null;
+}
+
+const PROJECT_SKILLS_DIR = resolveProjectSkillsDir();
+
+function skillMdPath(dir: string, name: string): string {
+  return join(dir, name, "SKILL.md");
+}
+
+function hasProjectSkill(name: string): boolean {
+  if (!PROJECT_SKILLS_DIR) return false;
+  return existsSync(skillMdPath(PROJECT_SKILLS_DIR, name));
+}
 
 function parseFrontmatter(content: string): { frontmatter: Record<string, unknown>; body: string } {
   const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -46,7 +83,7 @@ function writeOpenclawJson(data: Record<string, unknown>) {
   writeFileSync(OPENCLAW_JSON, JSON.stringify(data, null, 2), "utf-8");
 }
 
-function scanDir(dir: string, source: "workspace" | "managed" | "bundled"): Array<Record<string, unknown>> {
+function scanDir(dir: string, source: "workspace" | "managed" | "bundled" | "project"): Array<Record<string, unknown>> {
   if (!existsSync(dir)) return [];
   const results: Array<Record<string, unknown>> = [];
   for (const name of readdirSync(dir, { withFileTypes: true })) {
@@ -62,10 +99,17 @@ function scanDir(dir: string, source: "workspace" | "managed" | "bundled"): Arra
     const hasScripts = existsSync(join(skillPath, "scripts"));
     const hasReferences = existsSync(join(skillPath, "references"));
     const stat = existsSync(skillMd) ? statSync(skillMd) : null;
+    const displayName =
+      (frontmatter.displayName ??
+        frontmatter.display_name ??
+        frontmatter.name ??
+        name.name) as string;
+    const pipelineStep = frontmatter.pipeline_step ?? frontmatter.pipelineStep;
+    const pipelineId = frontmatter.pipeline_id ?? frontmatter.pipelineId;
     results.push({
       name: name.name,
-      displayName: frontmatter.displayName ?? frontmatter.name ?? name.name,
-      description: frontmatter.description ?? "",
+      displayName,
+      description: (frontmatter.description ?? "") as string,
       version: frontmatter.version,
       source,
       path: skillPath,
@@ -76,8 +120,8 @@ function scanDir(dir: string, source: "workspace" | "managed" | "bundled"): Arra
       hasScripts,
       hasReferences,
       updatedAt: stat?.mtime?.toISOString?.() ?? new Date().toISOString(),
-      ...(frontmatter.pipeline_step ? { pipelineStep: frontmatter.pipeline_step } : {}),
-      ...(frontmatter.pipeline_id ? { pipelineId: frontmatter.pipeline_id } : {}),
+      ...(pipelineStep !== undefined && pipelineStep !== null ? { pipelineStep } : {}),
+      ...(pipelineId ? { pipelineId } : {}),
     });
   }
   return results;
@@ -87,7 +131,9 @@ export function scanSkills(): Array<Record<string, unknown>> {
   const workspace = scanDir(WORKSPACE_SKILLS, "workspace");
   const managed = scanDir(MANAGED_SKILLS, "managed");
   const bundled = scanDir(BUNDLED_SKILLS, "bundled");
+  const project = PROJECT_SKILLS_DIR ? scanDir(PROJECT_SKILLS_DIR, "project") : [];
   const bundledNames = new Set(bundled.map((b) => b.name as string));
+  const projectNames = new Set(project.map((p) => p.name as string));
 
   const seen = new Set<string>();
   const merged: Array<Record<string, unknown>> = [];
@@ -99,6 +145,14 @@ export function scanSkills(): Array<Record<string, unknown>> {
       s.source = "bundled";
       s.overridden = true;
       s.bundledPath = orig.path;
+      if (!s.pipelineStep && orig.pipelineStep) s.pipelineStep = orig.pipelineStep;
+      if (!s.pipelineId && orig.pipelineId) s.pipelineId = orig.pipelineId;
+      if (!s.displayName || s.displayName === n) s.displayName = orig.displayName;
+    } else if (projectNames.has(n)) {
+      const orig = project.find((p) => p.name === n)!;
+      s.source = "project";
+      s.overridden = true;
+      (s as Record<string, unknown>).repoPath = orig.path;
       if (!s.pipelineStep && orig.pipelineStep) s.pipelineStep = orig.pipelineStep;
       if (!s.pipelineId && orig.pipelineId) s.pipelineId = orig.pipelineId;
       if (!s.displayName || s.displayName === n) s.displayName = orig.displayName;
@@ -115,6 +169,15 @@ export function scanSkills(): Array<Record<string, unknown>> {
     merged.push(s);
   }
 
+  // 仓库 skills-openclaw：补齐未部署到 ~/.openclaw 的技能（开发环境默认可见）
+  for (const s of project) {
+    const n = s.name as string;
+    if (seen.has(n)) continue;
+    seen.add(n);
+    s.overridden = false;
+    merged.push(s);
+  }
+
   return merged.sort((a, b) => ((a.name as string) ?? "").localeCompare((b.name as string) ?? ""));
 }
 
@@ -126,7 +189,18 @@ export function getSkill(name: string): Record<string, unknown> | null {
     bundledFm = parseFrontmatter(readFileSync(bundledMd, "utf-8")).frontmatter;
   }
 
-  for (const dir of [WORKSPACE_SKILLS, MANAGED_SKILLS, BUNDLED_SKILLS]) {
+  const repoMd =
+    PROJECT_SKILLS_DIR ? skillMdPath(PROJECT_SKILLS_DIR, name) : "";
+  const hasRepo = Boolean(repoMd && existsSync(repoMd));
+  let repoFm: Record<string, unknown> | null = null;
+  if (hasRepo && repoMd) {
+    repoFm = parseFrontmatter(readFileSync(repoMd, "utf-8")).frontmatter;
+  }
+
+  const searchDirs = [WORKSPACE_SKILLS, MANAGED_SKILLS, BUNDLED_SKILLS];
+  if (PROJECT_SKILLS_DIR) searchDirs.push(PROJECT_SKILLS_DIR);
+
+  for (const dir of searchDirs) {
     const skillPath = join(dir, name);
     const skillMd = join(skillPath, "SKILL.md");
     if (!existsSync(skillMd)) continue;
@@ -141,24 +215,49 @@ export function getSkill(name: string): Record<string, unknown> | null {
 
     let source: string;
     let overridden = false;
-    if (isBundled) {
-      source = "bundled";
-      overridden = dir === WORKSPACE_SKILLS;
-    } else if (dir === WORKSPACE_SKILLS) {
-      source = "workspace";
+    if (dir === WORKSPACE_SKILLS) {
+      if (isBundled) {
+        source = "bundled";
+        overridden = true;
+      } else if (hasRepo) {
+        source = "project";
+        overridden = true;
+      } else {
+        source = "workspace";
+      }
     } else if (dir === MANAGED_SKILLS) {
       source = "managed";
-    } else {
+    } else if (dir === BUNDLED_SKILLS) {
       source = "bundled";
+    } else {
+      source = "project";
     }
 
-    const pipelineStep = frontmatter.pipeline_step ?? bundledFm?.pipeline_step;
-    const pipelineId = frontmatter.pipeline_id ?? bundledFm?.pipeline_id;
+    const pipelineStep =
+      frontmatter.pipeline_step ??
+      frontmatter.pipelineStep ??
+      bundledFm?.pipeline_step ??
+      repoFm?.pipeline_step ??
+      repoFm?.pipelineStep;
+    const pipelineId =
+      frontmatter.pipeline_id ??
+      frontmatter.pipelineId ??
+      bundledFm?.pipeline_id ??
+      repoFm?.pipeline_id;
 
-    return {
+    const displayName = (frontmatter.displayName ??
+      frontmatter.display_name ??
+      bundledFm?.displayName ??
+      bundledFm?.display_name ??
+      repoFm?.displayName ??
+      repoFm?.display_name ??
+      frontmatter.name ??
+      name) as string;
+
+    const out: Record<string, unknown> = {
       name,
-      displayName: frontmatter.displayName ?? bundledFm?.displayName ?? frontmatter.name ?? name,
-      description: frontmatter.description ?? "",
+      displayName,
+      description: (frontmatter.description ?? "") as string,
       version: frontmatter.version,
       source,
       path: skillPath,
@@ -170,10 +269,12 @@ export function getSkill(name: string): Record<string, unknown> | null {
       hasReferences,
       updatedAt: stat.mtime.toISOString(),
       overridden,
-      ...(isBundled ? { bundledPath: join(BUNDLED_SKILLS, name) } : {}),
-      ...(pipelineStep ? { pipelineStep } : {}),
-      ...(pipelineId ? { pipelineId } : {}),
     };
+    if (isBundled) out.bundledPath = join(BUNDLED_SKILLS, name);
+    if (hasRepo && PROJECT_SKILLS_DIR) out.repoPath = join(PROJECT_SKILLS_DIR, name);
+    if (pipelineStep !== undefined && pipelineStep !== null) out.pipelineStep = pipelineStep;
+    if (pipelineId) out.pipelineId = pipelineId;
+    return out;
   }
   return null;
 }
@@ -188,6 +289,12 @@ export function createSkill(name: string, content: string): Record<string, unkno
 
 export function updateSkill(name: string, content: string): Record<string, unknown> | null {
   if (existsSync(join(BUNDLED_SKILLS, name, "SKILL.md"))) {
+    const overridePath = join(WORKSPACE_SKILLS, name);
+    mkdirSync(overridePath, { recursive: true });
+    writeFileSync(join(overridePath, "SKILL.md"), content, "utf-8");
+    return getSkill(name);
+  }
+  if (hasProjectSkill(name)) {
     const overridePath = join(WORKSPACE_SKILLS, name);
     mkdirSync(overridePath, { recursive: true });
     writeFileSync(join(overridePath, "SKILL.md"), content, "utf-8");
@@ -214,16 +321,51 @@ export function deleteSkill(name: string): boolean {
       return true;
     }
   }
+  if (hasProjectSkill(name)) {
+    throw new Error("仓库内置技能不可删除（仅可删除 ~/.openclaw/workspace/skills 下的覆盖副本）");
+  }
   return false;
 }
 
 export function resetSkill(name: string): boolean {
-  if (!existsSync(join(BUNDLED_SKILLS, name, "SKILL.md"))) return false;
+  const inBundled = existsSync(join(BUNDLED_SKILLS, name, "SKILL.md"));
+  if (!inBundled && !hasProjectSkill(name)) return false;
   const overridePath = join(WORKSPACE_SKILLS, name);
   if (existsSync(overridePath)) {
     rmSync(overridePath, { recursive: true });
   }
   return true;
+}
+
+function walkSkillFiles(root: string, rel = ""): Array<{ path: string; type: "file" | "dir" }> {
+  const out: Array<{ path: string; type: "file" | "dir" }> = [];
+  const base = rel ? join(root, rel) : root;
+  let list: Dirent[];
+  try {
+    list = readdirSync(base, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const d of list) {
+    const p = rel ? `${rel}/${d.name}` : d.name;
+    if (d.isDirectory()) {
+      out.push({ path: p, type: "dir" });
+      out.push(...walkSkillFiles(root, p));
+    } else {
+      out.push({ path: p, type: "file" });
+    }
+  }
+  return out;
+}
+
+export function listSkillFileEntries(
+  name: string,
+): { entries: Array<{ path: string; type: "file" | "dir" }>; skillRoot: string } | null {
+  const meta = getSkill(name);
+  const skillRoot = meta?.path;
+  if (typeof skillRoot !== "string" || !existsSync(skillRoot)) return null;
+  const entries = walkSkillFiles(skillRoot).sort((a, b) => a.path.localeCompare(b.path));
+  return { entries, skillRoot };
 }
 
 export function updateConfig(name: string, config: { enabled?: boolean; env?: Record<string, string> }): void {
