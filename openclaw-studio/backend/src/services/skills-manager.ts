@@ -12,6 +12,7 @@ import { join, dirname, normalize } from "path";
 import { homedir } from "os";
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
+import { pickDisplayName } from "./skill-display-names.js";
 
 const OPENCLAW_HOME =
   process.env.OPENCLAW_STATE_DIR || join(homedir(), ".openclaw");
@@ -49,7 +50,8 @@ function hasProjectSkill(name: string): boolean {
 }
 
 function parseFrontmatter(content: string): { frontmatter: Record<string, unknown>; body: string } {
-  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  const normalized = content.replace(/\r\n/g, "\n").replace(/^\uFEFF/, "");
+  const match = normalized.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) return { frontmatter: {}, body: content };
   const [, fm, body] = match;
   const frontmatter: Record<string, unknown> = {};
@@ -99,11 +101,7 @@ function scanDir(dir: string, source: "workspace" | "managed" | "bundled" | "pro
     const hasScripts = existsSync(join(skillPath, "scripts"));
     const hasReferences = existsSync(join(skillPath, "references"));
     const stat = existsSync(skillMd) ? statSync(skillMd) : null;
-    const displayName =
-      (frontmatter.displayName ??
-        frontmatter.display_name ??
-        frontmatter.name ??
-        name.name) as string;
+    const displayName = pickDisplayName(name.name, frontmatter);
     const pipelineStep = frontmatter.pipeline_step ?? frontmatter.pipelineStep;
     const pipelineId = frontmatter.pipeline_id ?? frontmatter.pipelineId;
     results.push({
@@ -178,6 +176,15 @@ export function scanSkills(): Array<Record<string, unknown>> {
     merged.push(s);
   }
 
+  for (const s of merged) {
+    const n = s.name as string;
+    const md = (s.metadata as Record<string, unknown>) ?? {};
+    const dn = s.displayName as string;
+    if (!dn || dn === n) {
+      s.displayName = pickDisplayName(n, md);
+    }
+  }
+
   return merged.sort((a, b) => ((a.name as string) ?? "").localeCompare((b.name as string) ?? ""));
 }
 
@@ -245,14 +252,12 @@ export function getSkill(name: string): Record<string, unknown> | null {
       bundledFm?.pipeline_id ??
       repoFm?.pipeline_id;
 
-    const displayName = (frontmatter.displayName ??
-      frontmatter.display_name ??
-      bundledFm?.displayName ??
-      bundledFm?.display_name ??
-      repoFm?.displayName ??
-      repoFm?.display_name ??
-      frontmatter.name ??
-      name) as string;
+    const displayName = pickDisplayName(
+      name,
+      frontmatter,
+      bundledFm ?? undefined,
+      repoFm ?? undefined,
+    );
 
     const out: Record<string, unknown> = {
       name,

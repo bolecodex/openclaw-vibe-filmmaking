@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { usePipelineStore, type StepState, type StepDefinition } from "../../stores/pipeline-store";
 import { useProjectStore } from "../../stores/project-store";
+import { skillTitle } from "../../lib/skill-zh-titles";
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: typeof CheckCircle2 }> = {
   completed: { color: "text-emerald-400", bg: "bg-emerald-500/20", icon: CheckCircle2 },
@@ -164,8 +165,11 @@ function StepDetailPanel({
     <div className="flex flex-col gap-4 rounded-lg border border-white/5 bg-surface-2 p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-white">{step.name}</h3>
-        <span className="rounded bg-gray-800 px-2 py-0.5 text-[10px] text-gray-400">
-          {def.skill}
+        <span
+          className="rounded bg-gray-800 px-2 py-0.5 text-[10px] text-gray-400"
+          title={def.skill}
+        >
+          {skillTitle(def.skill)}
         </span>
       </div>
 
